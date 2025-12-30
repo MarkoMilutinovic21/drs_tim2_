@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # MySQL Baza 1 - Server database (korisnici, avio kompanije)
+  # Database 1 - Server Database (Users, Airlines, Login Attempts)
   db1:
     image: mysql:8.0
-    container_name: flight_db1
+    container_name: flight_booking_db1
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
@@ -16,16 +16,17 @@ services:
     volumes:
       - db1_data:/var/lib/mysql
     networks:
-      - flight-network
+      - flight_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # MySQL Baza 2 - Flight Service database (letovi, karte, ocene)
+  # Database 2 - Flight Service Database (Flights, Bookings, Ratings)
   db2:
     image: mysql:8.0
-    container_name: flight_db2
+    container_name: flight_booking_db2
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root_password
@@ -37,99 +38,108 @@ services:
     volumes:
       - db2_data:/var/lib/mysql
     networks:
-      - flight-network
+      - flight_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  # Redis Cache
+  # Redis - Caching and Session Storage
   redis:
     image: redis:7-alpine
-    container_name: flight_redis
+    container_name: flight_booking_redis
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
-      - flight-network
+      - flight_network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Flask Server - Glavni backend
+  # Server - Main Backend Service
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: flight_server
+    container_name: flight_booking_server
     restart: always
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=mysql+pymysql://flight_user:flight_password@db1:3306/flight_booking_db
-      - REDIS_URL=redis://redis:6379/0
-      - JWT_SECRET_KEY=your-secret-key-change-in-production
-      - FLIGHT_SERVICE_URL=http://flight-service:5001
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://flight_user:flight_password@db1:3306/flight_booking_db
+      REDIS_URL: redis://redis:6379/0
+      FLIGHT_SERVICE_URL: http://flight-service:5001
+      SECRET_KEY: your-secret-key-change-in-production
+      JWT_SECRET_KEY: your-jwt-secret-key-change-in-production
     depends_on:
       db1:
         condition: service_healthy
       redis:
         condition: service_healthy
     networks:
-      - flight-network
+      - flight_network
     volumes:
       - ./server:/app
+      - server_uploads:/app/uploads
 
-  # Flask Flight Service - Mikroservis za letove
+  # Flight Service - Microservice for Flights
   flight-service:
     build:
       context: ./flight-service
       dockerfile: Dockerfile
-    container_name: flight_service
+    container_name: flight_booking_flight_service
     restart: always
     ports:
       - "5001:5001"
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=mysql+pymysql://flight_user:flight_password@db2:3306/flight_service_db
-      - SERVER_URL=http://server:5000
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://flight_user:flight_password@db2:3306/flight_service_db
+      SERVER_URL: http://server:5000
+      SECRET_KEY: your-secret-key-change-in-production
     depends_on:
       db2:
         condition: service_healthy
     networks:
-      - flight-network
+      - flight_network
     volumes:
       - ./flight-service:/app
+      - flight_reports:/app/reports
 
-  # React Client - Frontend
+  # Client - React Frontend
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: flight_client
+    container_name: flight_booking_client
     restart: always
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:5000
-      - VITE_FLIGHT_SERVICE_URL=http://localhost:5001
-      - VITE_SOCKET_URL=http://localhost:5000
+      VITE_SERVER_URL: http://localhost:5000
+      VITE_FLIGHT_SERVICE_URL: http://localhost:5001
     depends_on:
       - server
       - flight-service
     networks:
-      - flight-network
+      - flight_network
     volumes:
       - ./client:/app
       - /app/node_modules
 
 networks:
-  flight-network:
+  flight_network:
     driver: bridge
 
 volumes:
   db1_data:
   db2_data:
+  redis_data:
+  server_uploads:
+  flight_reports:
