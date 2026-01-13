@@ -1,0 +1,145 @@
+version: '3.8'
+
+services:
+  # Database 1 - Server Database (Users, Airlines, Login Attempts)
+  db1:
+    image: mysql:8.0
+    container_name: flight_booking_db1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: flight_booking_db
+      MYSQL_USER: flight_user
+      MYSQL_PASSWORD: flight_password
+    ports:
+      - "3308:3306"
+    volumes:
+      - db1_data:/var/lib/mysql
+    networks:
+      - flight_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Database 2 - Flight Service Database (Flights, Bookings, Ratings)
+  db2:
+    image: mysql:8.0
+    container_name: flight_booking_db2
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: flight_service_db
+      MYSQL_USER: flight_user
+      MYSQL_PASSWORD: flight_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - db2_data:/var/lib/mysql
+    networks:
+      - flight_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Caching and Session Storage
+  redis:
+    image: redis:7-alpine
+    container_name: flight_booking_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - flight_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Server - Main Backend Service
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: flight_booking_server
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://flight_user:flight_password@db1:3306/flight_booking_db
+      REDIS_URL: redis://redis:6379/0
+      FLIGHT_SERVICE_URL: http://flight-service:5001
+      SECRET_KEY: your-secret-key-change-in-production
+      JWT_SECRET_KEY: your-jwt-secret-key-change-in-production
+    depends_on:
+      db1:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - flight_network
+    volumes:
+      - ./server:/app
+      - server_uploads:/app/uploads
+
+  # Flight Service - Microservice for Flights
+  flight-service:
+    build:
+      context: ./flight-service
+      dockerfile: Dockerfile
+    container_name: flight_booking_flight_service
+    restart: always
+    ports:
+      - "5001:5001"
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://flight_user:flight_password@db2:3306/flight_service_db
+      SERVER_URL: http://server:5000
+      SECRET_KEY: your-secret-key-change-in-production
+    depends_on:
+      db2:
+        condition: service_healthy
+    networks:
+      - flight_network
+    volumes:
+      - ./flight-service:/app
+      - flight_reports:/app/reports
+
+  # Client - React Frontend
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: flight_booking_client
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_SERVER_URL: http://localhost:5000
+      VITE_FLIGHT_SERVICE_URL: http://localhost:5001
+    depends_on:
+      - server
+      - flight-service
+    networks:
+      - flight_network
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+networks:
+  flight_network:
+    driver: bridge
+
+volumes:
+  db1_data:
+  db2_data:
+  redis_data:
+  server_uploads:
+  flight_reports:
