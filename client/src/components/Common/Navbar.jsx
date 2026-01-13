@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { getProfilePictureUrl } from '../../utils/profileHelpers';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -51,10 +52,17 @@ const Navbar = () => {
               </Link>
 
               <div className="navbar-user">
-                <span className="user-name">
-                  {user?.first_name} {user?.last_name}
-                </span>
-                <span className="user-role">{user?.role}</span>
+                <img
+                  src={getProfilePictureUrl(user?.profile_picture)}
+                  alt="Profile"
+                  className="navbar-avatar"
+                />
+                <div className="navbar-user-info">
+                  <span className="user-name">
+                    {user?.first_name} {user?.last_name}
+                  </span>
+                  <span className="user-role">{user?.role}</span>
+                </div>
               </div>
 
               <button onClick={handleLogout} className="btn btn-secondary">

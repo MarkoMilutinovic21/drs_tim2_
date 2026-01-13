@@ -3,7 +3,8 @@ Custom decorators for route protection and validation.
 """
 from functools import wraps
 from flask import jsonify
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import verify_jwt_in_request
+from app.utils.jwt_helpers import get_current_user_id
 from app.models import User
 from app import db
 
@@ -14,7 +15,7 @@ def admin_required():
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            current_user_id = get_jwt_identity()
+            current_user_id = get_current_user_id()
             user = db.session.get(User, current_user_id)
             
             if not user:
@@ -34,7 +35,7 @@ def manager_required():
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            current_user_id = get_jwt_identity()
+            current_user_id = get_current_user_id()
             user = db.session.get(User, current_user_id)
             
             if not user:
@@ -59,7 +60,7 @@ def role_required(allowed_roles):
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            current_user_id = get_jwt_identity()
+            current_user_id = get_current_user_id()
             user = db.session.get(User, current_user_id)
             
             if not user:
@@ -82,7 +83,7 @@ def account_active_required():
         @wraps(fn)
         def decorator(*args, **kwargs):
             verify_jwt_in_request()
-            current_user_id = get_jwt_identity()
+            current_user_id = get_current_user_id()
             user = db.session.get(User, current_user_id)
             
             if not user:

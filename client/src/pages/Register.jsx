@@ -20,7 +20,8 @@ const Register = () => {
     gender: 'M',
     country: '',
     street: '',
-    street_number: ''
+    street_number: '',
+    account_balance: '0'
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -95,6 +96,12 @@ const Register = () => {
     const streetNumberValidation = validateRequired(formData.street_number, 'Street number');
     if (!streetNumberValidation.valid) {
       newErrors.street_number = streetNumberValidation.message;
+    }
+
+    // Account balance
+    const balance = parseFloat(formData.account_balance);
+    if (isNaN(balance) || balance < 0) {
+      newErrors.account_balance = 'Account balance must be a positive number';
     }
 
     return newErrors;
@@ -298,6 +305,22 @@ const Register = () => {
                 />
                 {errors.street_number && <div className="form-error">{errors.street_number}</div>}
               </div>
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Initial Account Balance</label>
+              <input
+                type="number"
+                name="account_balance"
+                className="form-input"
+                value={formData.account_balance}
+                onChange={handleChange}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+              {errors.account_balance && <div className="form-error">{errors.account_balance}</div>}
+              <small style={{ color: '#666', fontSize: '0.85rem' }}>Enter your starting account balance (optional, defaults to 0)</small>
             </div>
 
             <button

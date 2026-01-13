@@ -80,7 +80,7 @@ class AuthService:
         LoginAttempt.clear_failed_attempts(user.id)
         
         # Generate JWT token
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         return {
             'message': 'Login successful',

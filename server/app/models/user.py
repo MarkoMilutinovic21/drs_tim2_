@@ -2,6 +2,7 @@
 User model for authentication and user management.
 """
 from datetime import datetime
+from decimal import Decimal
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
@@ -33,7 +34,7 @@ class User(db.Model):
     # Profile Picture
     profile_picture = db.Column(db.String(255), nullable=True)
     
-    # Role: KORISNIK, MENADŽER, ADMINISTRATOR
+    # Role: KORISNIK, MANAGER, ADMINISTRATOR
     role = db.Column(db.String(20), default='KORISNIK', nullable=False)
     
     # Account Status
@@ -77,7 +78,7 @@ class User(db.Model):
     
     def is_manager(self):
         """Check if user is a manager."""
-        return self.role == 'MENADŽER'
+        return self.role == 'MANAGER'
     
     def is_regular_user(self):
         """Check if user is a regular user."""
@@ -85,7 +86,7 @@ class User(db.Model):
     
     def can_create_flights(self):
         """Check if user can create flights (managers only)."""
-        return self.role == 'MENADŽER'
+        return self.role == 'MANAGER'
     
     def lock_account(self, duration_seconds):
         """Lock the user account for specified duration."""
@@ -114,14 +115,14 @@ class User(db.Model):
     def add_balance(self, amount):
         """Add money to user's account balance."""
         if amount > 0:
-            self.account_balance += amount
+            self.account_balance += Decimal(str(amount))
             return True
         return False
     
     def deduct_balance(self, amount):
         """Deduct money from user's account balance."""
-        if amount > 0 and self.account_balance >= amount:
-            self.account_balance -= amount
+        if amount > 0 and self.account_balance >= Decimal(str(amount)):
+            self.account_balance -= Decimal(str(amount))
             return True
         return False
     

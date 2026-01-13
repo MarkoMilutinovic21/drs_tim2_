@@ -55,3 +55,7 @@ logs/
 
 # OS
 Thumbs.db
+
+# Temporary files
+tmpclaude-*
+nul

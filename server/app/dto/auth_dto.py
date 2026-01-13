@@ -53,7 +53,7 @@ class RoleUpdateDTO:
         if not self.user_id:
             errors.append("User ID is required")
         
-        if self.new_role not in ['KORISNIK', 'MENADŽER', 'ADMINISTRATOR']:
-            errors.append("Role must be KORISNIK, MENADŽER, or ADMINISTRATOR")
+        if self.new_role not in ['KORISNIK', 'MANAGER', 'ADMINISTRATOR']:
+            errors.append("Role must be KORISNIK, MANAGER, or ADMINISTRATOR")
         
         return errors

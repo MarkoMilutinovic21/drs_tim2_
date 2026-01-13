@@ -95,14 +95,14 @@ def validate_gender(gender):
 def validate_role(role):
     """
     Validate user role.
-    
+
     Args:
         role: Role string
-    
+
     Returns:
         bool: True if valid, False otherwise
     """
-    return role in ['KORISNIK', 'MENADŽER', 'ADMINISTRATOR']
+    return role in ['KORISNIK', 'MANAGER', 'ADMINISTRATOR']
 
 
 def validate_amount(amount):

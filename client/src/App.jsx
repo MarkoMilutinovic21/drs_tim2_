@@ -54,7 +54,7 @@ function App() {
                 <Route
                   path="/manager"
                   element={
-                    <ProtectedRoute requiredRole="MENADŽER">
+                    <ProtectedRoute requiredRole="MANAGER">
                       <ManagerDashboard />
                     </ProtectedRoute>
                   }

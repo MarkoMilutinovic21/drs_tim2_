@@ -2,9 +2,10 @@
 Authentication routes for login, logout, and user registration.
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt
 from app.services import AuthService, UserService
 from app.dto import LoginDTO, UserRegistrationDTO
+from app.utils.jwt_helpers import get_current_user_id
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -112,7 +113,7 @@ def get_current_user():
     Headers: Authorization: Bearer <token>
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Get user
         user = AuthService.get_current_user(current_user_id)
@@ -138,7 +139,7 @@ def refresh_token():
     try:
         from flask_jwt_extended import create_access_token
         
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Create new access token
         new_token = create_access_token(identity=current_user_id)

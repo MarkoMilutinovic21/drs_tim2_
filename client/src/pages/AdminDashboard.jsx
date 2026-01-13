@@ -361,7 +361,7 @@ const AdminDashboard = () => {
                   onChange={(e) => setNewRole(e.target.value)}
                 >
                   <option value="KORISNIK">KORISNIK (User)</option>
-                  <option value="MENADŽER">MENADŽER (Manager)</option>
+                  <option value="MANAGER">MANAGER (Manager)</option>
                   <option value="ADMINISTRATOR">ADMINISTRATOR (Admin)</option>
                 </select>
               </div>

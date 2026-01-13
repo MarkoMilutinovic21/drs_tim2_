@@ -52,7 +52,7 @@ class Config:
     
     # Login Security
     MAX_LOGIN_ATTEMPTS = int(os.getenv('MAX_LOGIN_ATTEMPTS', 3))
-    LOCKOUT_DURATION = int(os.getenv('LOCKOUT_DURATION', 900))  # 15 minutes in seconds
+    LOCKOUT_DURATION = int(os.getenv('LOCKOUT_DURATION', 60))  # 1 minute in seconds
     
     # Server
     HOST = os.getenv('HOST', '0.0.0.0')

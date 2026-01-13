@@ -71,7 +71,15 @@ class UserRegistrationDTO:
         
         if not self.street_number or len(self.street_number.strip()) == 0:
             errors.append("Street number is required")
-        
+
+        # Validate account_balance
+        try:
+            balance = float(self.account_balance)
+            if balance < 0:
+                errors.append("Account balance cannot be negative")
+        except (TypeError, ValueError):
+            errors.append("Account balance must be a valid number")
+
         return errors
 
 

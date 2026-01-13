@@ -2,7 +2,8 @@
 User management routes.
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
+from app.utils.jwt_helpers import get_current_user_id
 from app.services import UserService
 from app.dto import UserUpdateDTO, PasswordChangeDTO, BalanceUpdateDTO, RoleUpdateDTO
 from app.utils import admin_required, account_active_required
@@ -44,7 +45,7 @@ def get_user(user_id):
     Headers: Authorization: Bearer <token>
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         current_user = db.session.get(User, current_user_id)
         
         # Users can only view their own profile unless admin
@@ -79,7 +80,7 @@ def update_user(user_id):
     }
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Users can only update their own profile
         if user_id != current_user_id:
@@ -113,7 +114,7 @@ def delete_user(user_id):
     Headers: Authorization: Bearer <token>
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Admin cannot delete themselves
         if user_id == current_user_id:
@@ -142,7 +143,7 @@ def change_password(user_id):
     }
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Users can only change their own password
         if user_id != current_user_id:
@@ -171,15 +172,15 @@ def change_password(user_id):
 def update_user_role(user_id):
     """
     Update user role (admin only).
-    
+
     PUT /api/users/{user_id}/role
     Headers: Authorization: Bearer <token>
     Body: {
-        "new_role": "MENADŽER"
+        "new_role": "MANAGER"
     }
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Admin cannot change their own role
         if user_id == current_user_id:
@@ -218,7 +219,7 @@ def add_balance(user_id):
     }
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Users can only add to their own balance
         if user_id != current_user_id:
@@ -253,7 +254,7 @@ def upload_profile_picture(user_id):
     Body: multipart/form-data with 'file' field
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         
         # Users can only upload their own profile picture
         if user_id != current_user_id:

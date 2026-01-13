@@ -267,7 +267,7 @@ class UserService:
         
         Args:
             user_id: User ID
-            new_role: New role (KORISNIK, MENADŽER, ADMINISTRATOR)
+            new_role: New role (KORISNIK, MANAGER, ADMINISTRATOR)
         
         Returns:
             tuple: (dict, int) - (response_data, status_code)
@@ -277,7 +277,7 @@ class UserService:
         if not user:
             return {'error': 'User not found'}, 404
         
-        if new_role not in ['KORISNIK', 'MENADŽER', 'ADMINISTRATOR']:
+        if new_role not in ['KORISNIK', 'MANAGER', 'ADMINISTRATOR']:
             return {'error': 'Invalid role'}, 400
         
         old_role = user.role

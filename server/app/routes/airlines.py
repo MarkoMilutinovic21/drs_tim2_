@@ -2,7 +2,8 @@
 Airline management routes.
 """
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
+from app.utils.jwt_helpers import get_current_user_id
 from app.services import AirlineService
 from app.dto import AirlineCreateDTO, AirlineUpdateDTO
 from app.utils import manager_required, admin_required, account_active_required
@@ -29,7 +30,7 @@ def create_airline():
     }
     """
     try:
-        current_user_id = get_jwt_identity()
+        current_user_id = get_current_user_id()
         data = request.get_json()
         
         if not data:

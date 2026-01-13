@@ -68,7 +68,14 @@ def create_app(config_name='default'):
     # Create upload folder if it doesn't exist
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.makedirs(app.config['UPLOAD_FOLDER'])
-    
+
+    # Serve uploaded files
+    from flask import send_from_directory
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        """Serve uploaded files."""
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
     # JWT token blacklist check
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
@@ -78,6 +85,33 @@ def create_app(config_name='default'):
             token_in_redis = redis_client.get(f"blacklist:{jti}")
             return token_in_redis is not None
         return False
+
+    # JWT error handlers
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        """Handle expired token."""
+        from flask import jsonify
+        return jsonify({'error': 'Token has expired'}), 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        """Handle invalid token."""
+        from flask import jsonify
+        app.logger.error(f"Invalid token: {error}")
+        return jsonify({'error': f'Invalid token: {error}'}), 422
+
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):
+        """Handle missing token."""
+        from flask import jsonify
+        app.logger.error(f"Missing token: {error}")
+        return jsonify({'error': f'Authorization header is missing: {error}'}), 401
+
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):
+        """Handle revoked token."""
+        from flask import jsonify
+        return jsonify({'error': 'Token has been revoked'}), 401
     
     # Register blueprints
     from app.routes import auth_bp, users_bp, airlines_bp
