@@ -1,7 +1,7 @@
 """
 Rating model for flight reviews.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -42,13 +42,18 @@ class Rating(db.Model):
     
     def to_dict(self):
         """Convert rating object to dictionary."""
+        def _format_utc(value):
+            if not value:
+                return None
+            return value.replace(tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')
+
         return {
             'id': self.id,
             'flight_id': self.flight_id,
             'user_id': self.user_id,
             'rating': self.rating,
             'comment': self.comment,
-            'created_at': self.created_at.isoformat() if self.created_at else None
+            'created_at': _format_utc(self.created_at)
         }
     
     @staticmethod

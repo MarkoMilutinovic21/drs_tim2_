@@ -1,3 +1,4 @@
+name: drs_tim2
 version: '3.8'
 
 services:
@@ -62,6 +63,17 @@ services:
       timeout: 5s
       retries: 5
 
+  # Mailhog - Local SMTP testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: flight_booking_mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - flight_network
+
   # Server - Main Backend Service
   server:
     build:
@@ -78,11 +90,20 @@ services:
       FLIGHT_SERVICE_URL: http://flight-service:5001
       SECRET_KEY: your-secret-key-change-in-production
       JWT_SECRET_KEY: your-jwt-secret-key-change-in-production
+      MAIL_SERVER: mailhog
+      MAIL_PORT: 1025
+      MAIL_USE_TLS: False
+      MAIL_USE_SSL: False
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_DEFAULT_SENDER: noreply@flightbooking.com
     depends_on:
       db1:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailhog:
+        condition: service_started
     networks:
       - flight_network
     volumes:

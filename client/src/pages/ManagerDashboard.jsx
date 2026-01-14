@@ -21,6 +21,7 @@ const ManagerDashboard = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAirlineModal, setShowAirlineModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [formData, setFormData] = useState({
@@ -34,6 +35,14 @@ const ManagerDashboard = () => {
     ticket_price: ''
   });
   const [formErrors, setFormErrors] = useState({});
+  const [airlineFormData, setAirlineFormData] = useState({
+    name: '',
+    code: '',
+    country: '',
+    description: '',
+    logo_url: ''
+  });
+  const [airlineErrors, setAirlineErrors] = useState({});
 
   const { user } = useAuth();
 
@@ -79,6 +88,17 @@ const ManagerDashboard = () => {
     setFormErrors({});
   };
 
+  const resetAirlineForm = () => {
+    setAirlineFormData({
+      name: '',
+      code: '',
+      country: '',
+      description: '',
+      logo_url: ''
+    });
+    setAirlineErrors({});
+  };
+
   const validateForm = () => {
     const errors = {};
 
@@ -109,6 +129,21 @@ const ManagerDashboard = () => {
     return errors;
   };
 
+  const validateAirlineForm = () => {
+    const errors = {};
+
+    const nameValidation = validateRequired(airlineFormData.name, 'Airline name');
+    if (!nameValidation.valid) errors.name = nameValidation.message;
+
+    const codeValidation = validateRequired(airlineFormData.code, 'Airline code');
+    if (!codeValidation.valid) errors.code = codeValidation.message;
+
+    const countryValidation = validateRequired(airlineFormData.country, 'Country');
+    if (!countryValidation.valid) errors.country = countryValidation.message;
+
+    return errors;
+  };
+
   const handleCreateFlight = async (e) => {
     e.preventDefault();
     setError('');
@@ -121,12 +156,14 @@ const ManagerDashboard = () => {
     }
 
     try {
+      const departureISO = new Date(formData.departure_time).toISOString();
       const flightData = {
         ...formData,
         airline_id: parseInt(formData.airline_id),
         distance_km: parseInt(formData.distance_km),
         duration_minutes: parseInt(formData.duration_minutes),
         ticket_price: parseFloat(formData.ticket_price),
+        departure_time: departureISO,
         created_by: user.id
       };
 
@@ -137,6 +174,34 @@ const ManagerDashboard = () => {
       loadFlights();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create flight');
+    }
+  };
+
+  const handleCreateAirline = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    const errors = validateAirlineForm();
+    if (Object.keys(errors).length > 0) {
+      setAirlineErrors(errors);
+      return;
+    }
+
+    try {
+      await airlineAPI.create({
+        name: airlineFormData.name,
+        code: airlineFormData.code,
+        country: airlineFormData.country,
+        description: airlineFormData.description || null,
+        logo_url: airlineFormData.logo_url || null
+      });
+      setSuccessMessage('Airline created successfully');
+      setShowAirlineModal(false);
+      resetAirlineForm();
+      loadAirlines();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create airline');
     }
   };
 
@@ -152,11 +217,12 @@ const ManagerDashboard = () => {
     }
 
     try {
+      const departureISO = new Date(formData.departure_time).toISOString();
       const updateData = {
         name: formData.name,
         distance_km: parseInt(formData.distance_km),
         duration_minutes: parseInt(formData.duration_minutes),
-        departure_time: formData.departure_time,
+        departure_time: departureISO,
         departure_airport: formData.departure_airport,
         arrival_airport: formData.arrival_airport,
         ticket_price: parseFloat(formData.ticket_price)
@@ -174,13 +240,19 @@ const ManagerDashboard = () => {
   };
 
   const openEditModal = (flight) => {
+    const toLocalInputValue = (dateString) => {
+      const date = new Date(dateString);
+      const pad = (value) => String(value).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    };
+
     setSelectedFlight(flight);
     setFormData({
       name: flight.name,
       airline_id: flight.airline_id,
       distance_km: flight.distance_km,
       duration_minutes: flight.duration_minutes,
-      departure_time: flight.departure_time.slice(0, 16), // Format for datetime-local
+      departure_time: toLocalInputValue(flight.departure_time),
       departure_airport: flight.departure_airport,
       arrival_airport: flight.arrival_airport,
       ticket_price: flight.ticket_price
@@ -193,6 +265,14 @@ const ManagerDashboard = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleAirlineChange = (e) => {
+    const { name, value } = e.target;
+    setAirlineFormData((prev) => ({ ...prev, [name]: value }));
+    if (airlineErrors[name]) {
+      setAirlineErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -212,9 +292,14 @@ const ManagerDashboard = () => {
           <h1>Manager Dashboard</h1>
           <p>Manage flights</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
-          Create New Flight
-        </button>
+        <div className="header-actions">
+          <button className="btn btn-secondary" onClick={() => setShowAirlineModal(true)}>
+            Create Airline
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+            Create New Flight
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -426,6 +511,100 @@ const ManagerDashboard = () => {
                 </button>
                 <button type="submit" className="btn btn-primary">
                   Create Flight
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Airline Modal */}
+      {showAirlineModal && (
+        <div className="modal-overlay" onClick={() => setShowAirlineModal(false)}>
+          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Airline</h2>
+              <button className="modal-close" onClick={() => { setShowAirlineModal(false); resetAirlineForm(); }}>
+                A-
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateAirline}>
+              <div className="modal-body">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      className="form-input"
+                      value={airlineFormData.name}
+                      onChange={handleAirlineChange}
+                    />
+                    {airlineErrors.name && <div className="form-error">{airlineErrors.name}</div>}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Code</label>
+                    <input
+                      type="text"
+                      name="code"
+                      className="form-input"
+                      value={airlineFormData.code}
+                      onChange={handleAirlineChange}
+                      placeholder="e.g., JU"
+                    />
+                    {airlineErrors.code && <div className="form-error">{airlineErrors.code}</div>}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      className="form-input"
+                      value={airlineFormData.country}
+                      onChange={handleAirlineChange}
+                    />
+                    {airlineErrors.country && <div className="form-error">{airlineErrors.country}</div>}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Logo URL (optional)</label>
+                    <input
+                      type="url"
+                      name="logo_url"
+                      className="form-input"
+                      value={airlineFormData.logo_url}
+                      onChange={handleAirlineChange}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Description (optional)</label>
+                  <textarea
+                    name="description"
+                    className="form-textarea"
+                    rows="3"
+                    value={airlineFormData.description}
+                    onChange={handleAirlineChange}
+                  />
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => { setShowAirlineModal(false); resetAirlineForm(); }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary">
+                  Create Airline
                 </button>
               </div>
             </form>

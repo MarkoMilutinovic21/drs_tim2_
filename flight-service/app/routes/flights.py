@@ -49,7 +49,7 @@ def create_flight():
         # If successful, send WebSocket notification to admin
         if status_code == 201:
             flight_data = response.get('flight')
-            socketio.emit('new_flight', flight_data, namespace='/', broadcast=True)
+            socketio.emit('new_flight', flight_data, namespace='/')
         
         return jsonify(response), status_code
     
@@ -188,7 +188,7 @@ def update_flight(flight_id):
         # If successful, send WebSocket notification to admin (resubmitted)
         if status_code == 200:
             flight_data = response.get('flight')
-            socketio.emit('new_flight', flight_data, namespace='/', broadcast=True)
+            socketio.emit('new_flight', flight_data, namespace='/')
         
         return jsonify(response), status_code
     
@@ -217,6 +217,16 @@ def cancel_flight(flight_id):
                 server_url = current_app.config['SERVER_URL']
                 
                 for user_id in affected_users:
+                    # Refund user for cancelled flight
+                    try:
+                        requests.post(
+                            f"{server_url}/api/users/{user_id}/refund",
+                            json={'amount': flight_data.get('ticket_price')},
+                            timeout=5
+                        )
+                    except Exception as e:
+                        current_app.logger.error(f"Failed to refund user {user_id}: {str(e)}")
+
                     # Notify user about cancellation
                     requests.post(
                         f"{server_url}/api/notifications/flight-cancelled",

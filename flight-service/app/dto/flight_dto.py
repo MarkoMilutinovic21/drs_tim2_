@@ -1,7 +1,15 @@
 """
 Data Transfer Objects (DTOs) for Flight operations.
 """
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def _to_naive_utc(value):
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
 
 
 class FlightCreateDTO:
@@ -25,6 +33,7 @@ class FlightCreateDTO:
         departure_time = data.get('departure_time')
         if isinstance(departure_time, str):
             departure_time = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
+        departure_time = _to_naive_utc(departure_time)
         
         return FlightCreateDTO(
             name=data.get('name'),
@@ -90,6 +99,7 @@ class FlightUpdateDTO:
         departure_time = data.get('departure_time')
         if departure_time and isinstance(departure_time, str):
             departure_time = datetime.fromisoformat(departure_time.replace('Z', '+00:00'))
+        departure_time = _to_naive_utc(departure_time)
         
         return FlightUpdateDTO(
             name=data.get('name'),

@@ -60,6 +60,32 @@ def get_user(user_id):
         return jsonify({'error': f'Failed to fetch user: {str(e)}'}), 500
 
 
+@users_bp.route('/<int:user_id>/internal', methods=['GET'])
+def get_user_internal(user_id):
+    """
+    Get basic user info for internal services (no auth).
+    
+    GET /api/users/{user_id}/internal
+    """
+    try:
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        return jsonify({
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'account_balance': float(user.account_balance),
+                'first_name': user.first_name,
+                'last_name': user.last_name
+            }
+        }), 200
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to fetch user: {str(e)}'}), 500
+
+
 @users_bp.route('/<int:user_id>', methods=['PUT'])
 @jwt_required()
 @account_active_required()
@@ -240,6 +266,56 @@ def add_balance(user_id):
     
     except Exception as e:
         return jsonify({'error': f'Failed to add balance: {str(e)}'}), 500
+
+
+@users_bp.route('/<int:user_id>/deduct', methods=['POST'])
+def deduct_balance(user_id):
+    """
+    Deduct money from user account balance (internal use).
+    
+    POST /api/users/{user_id}/deduct
+    Body: {
+        "amount": 100.00
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        balance_dto = BalanceUpdateDTO.from_dict(data)
+        response, status_code = UserService.deduct_balance(user_id, balance_dto)
+        
+        return jsonify(response), status_code
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to deduct balance: {str(e)}'}), 500
+
+
+@users_bp.route('/<int:user_id>/refund', methods=['POST'])
+def refund_balance(user_id):
+    """
+    Refund money to user account balance (internal use).
+    
+    POST /api/users/{user_id}/refund
+    Body: {
+        "amount": 100.00
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        balance_dto = BalanceUpdateDTO.from_dict(data)
+        response, status_code = UserService.refund_balance(user_id, balance_dto)
+        
+        return jsonify(response), status_code
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to refund balance: {str(e)}'}), 500
 
 
 @users_bp.route('/<int:user_id>/profile-picture', methods=['POST'])

@@ -1,7 +1,7 @@
 """
 Flight model for managing flights.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -120,13 +120,18 @@ class Flight(db.Model):
     
     def to_dict(self):
         """Convert flight object to dictionary."""
+        def _format_utc(value):
+            if not value:
+                return None
+            return value.replace(tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')
+
         return {
             'id': self.id,
             'name': self.name,
             'airline_id': self.airline_id,
             'distance_km': self.distance_km,
             'duration_minutes': self.duration_minutes,
-            'departure_time': self.departure_time.isoformat() if self.departure_time else None,
+            'departure_time': _format_utc(self.departure_time),
             'departure_airport': self.departure_airport,
             'arrival_airport': self.arrival_airport,
             'ticket_price': float(self.ticket_price),
@@ -137,8 +142,8 @@ class Flight(db.Model):
             'is_ongoing': self.is_ongoing(),
             'is_completed': self.is_completed(),
             'remaining_time': self.get_remaining_time() if self.is_ongoing() else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'created_at': _format_utc(self.created_at),
+            'updated_at': _format_utc(self.updated_at)
         }
     
     def __repr__(self):

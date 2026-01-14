@@ -1,7 +1,7 @@
 """
 Booking model for managing flight bookings.
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db
 
 
@@ -54,14 +54,19 @@ class Booking(db.Model):
     
     def to_dict(self):
         """Convert booking object to dictionary."""
+        def _format_utc(value):
+            if not value:
+                return None
+            return value.replace(tzinfo=timezone.utc).isoformat().replace('+00:00', 'Z')
+
         return {
             'id': self.id,
             'flight_id': self.flight_id,
             'user_id': self.user_id,
             'ticket_price': float(self.ticket_price),
             'status': self.status,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'created_at': _format_utc(self.created_at),
+            'updated_at': _format_utc(self.updated_at)
         }
     
     def __repr__(self):

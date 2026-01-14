@@ -114,11 +114,12 @@ def create_app(config_name='default'):
         return jsonify({'error': 'Token has been revoked'}), 401
     
     # Register blueprints
-    from app.routes import auth_bp, users_bp, airlines_bp
+    from app.routes import auth_bp, users_bp, airlines_bp, notifications_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
     app.register_blueprint(airlines_bp, url_prefix='/api/airlines')
+    app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
     
     # Health check endpoint
     @app.route('/health')

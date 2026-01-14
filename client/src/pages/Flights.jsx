@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { flightAPI, bookingAPI, ratingAPI } from '../services/api';
+import { flightAPI, bookingAPI, ratingAPI, airlineAPI } from '../services/api';
 import { useFlightTimer } from '../hooks/useFlightTimer';
 import {
   formatDateTime,
@@ -17,9 +17,12 @@ const Flights = () => {
     ongoing: [],
     completed_cancelled: []
   });
+  const [airlines, setAirlines] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [searchName, setSearchName] = useState('');
+  const [selectedAirline, setSelectedAirline] = useState('');
   const [bookingLoading, setBookingLoading] = useState({});
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -29,6 +32,7 @@ const Flights = () => {
 
   useEffect(() => {
     loadFlights();
+    loadAirlines();
     // Refresh flights every 30 seconds
     const interval = setInterval(loadFlights, 30000);
     return () => clearInterval(interval);
@@ -45,6 +49,15 @@ const Flights = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAirlines = async () => {
+    try {
+      const response = await airlineAPI.getAll();
+      setAirlines(response.data.airlines);
+    } catch (err) {
+      console.error('Failed to load airlines:', err);
     }
   };
 
@@ -180,7 +193,18 @@ const Flights = () => {
     );
   }
 
-  const currentFlights = flights[activeTab] || [];
+  const nameFilter = searchName.trim().toLowerCase();
+  const airlineFilter = selectedAirline ? parseInt(selectedAirline, 10) : null;
+
+  const currentFlights = (flights[activeTab] || []).filter((flight) => {
+    if (nameFilter && !flight.name.toLowerCase().includes(nameFilter)) {
+      return false;
+    }
+    if (airlineFilter && flight.airline_id !== airlineFilter) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="flights-page">
@@ -222,6 +246,28 @@ const Flights = () => {
         >
           Completed / Cancelled ({flights.completed_cancelled.length})
         </button>
+      </div>
+
+      <div className="filters">
+        <input
+          type="text"
+          className="form-input"
+          placeholder="Search by flight name..."
+          value={searchName}
+          onChange={(e) => setSearchName(e.target.value)}
+        />
+        <select
+          className="form-select"
+          value={selectedAirline}
+          onChange={(e) => setSelectedAirline(e.target.value)}
+        >
+          <option value="">All airlines</option>
+          {airlines.map((airline) => (
+            <option key={airline.id} value={airline.id}>
+              {airline.name} ({airline.code})
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flights-grid">

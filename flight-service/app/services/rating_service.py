@@ -2,6 +2,7 @@
 Rating service for managing flight ratings.
 """
 from flask import current_app
+import requests
 from app import db
 from app.models import Flight, Booking, Rating
 from app.dto import RatingCreateDTO
@@ -139,6 +140,7 @@ class RatingService:
             ratings_data = []
             for rating in ratings:
                 rating_dict = rating.to_dict()
+                rating_dict['user_email'] = None
                 
                 # Get flight details
                 flight = db.session.get(Flight, rating.flight_id)
@@ -149,6 +151,19 @@ class RatingService:
                         'departure_airport': flight.departure_airport,
                         'arrival_airport': flight.arrival_airport
                     }
+
+                # Get user email from Server
+                try:
+                    server_url = current_app.config['SERVER_URL']
+                    user_response = requests.get(
+                        f"{server_url}/api/users/{rating.user_id}/internal",
+                        timeout=5
+                    )
+                    if user_response.status_code == 200:
+                        user_data = user_response.json().get('user', {})
+                        rating_dict['user_email'] = user_data.get('email')
+                except Exception:
+                    pass
                 
                 ratings_data.append(rating_dict)
             

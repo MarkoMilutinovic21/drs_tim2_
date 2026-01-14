@@ -53,7 +53,7 @@ class BookingService:
             
             try:
                 user_response = requests.get(
-                    f"{server_url}/api/users/{booking_dto.user_id}",
+                    f"{server_url}/api/users/{booking_dto.user_id}/internal",
                     timeout=5
                 )
                 

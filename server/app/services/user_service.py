@@ -337,6 +337,76 @@ class UserService:
             db.session.rollback()
             current_app.logger.error(f"Error adding balance: {str(e)}")
             return {'error': 'Failed to add balance'}, 500
+
+    @staticmethod
+    def deduct_balance(user_id, balance_dto: BalanceUpdateDTO):
+        """
+        Deduct money from user's account balance (internal use).
+        
+        Args:
+            user_id: User ID
+            balance_dto: BalanceUpdateDTO with amount
+        
+        Returns:
+            tuple: (dict, int) - (response_data, status_code)
+        """
+        user = db.session.get(User, user_id)
+        
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        errors = balance_dto.validate()
+        if errors:
+            return {'errors': errors}, 400
+        
+        try:
+            if user.deduct_balance(balance_dto.amount):
+                db.session.commit()
+                return {
+                    'message': 'Balance deducted successfully',
+                    'new_balance': float(user.account_balance)
+                }, 200
+            return {'error': 'Insufficient balance'}, 400
+        
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error deducting balance: {str(e)}")
+            return {'error': 'Failed to deduct balance'}, 500
+
+    @staticmethod
+    def refund_balance(user_id, balance_dto: BalanceUpdateDTO):
+        """
+        Refund money to user's account balance (internal use).
+        
+        Args:
+            user_id: User ID
+            balance_dto: BalanceUpdateDTO with amount
+        
+        Returns:
+            tuple: (dict, int) - (response_data, status_code)
+        """
+        user = db.session.get(User, user_id)
+        
+        if not user:
+            return {'error': 'User not found'}, 404
+        
+        errors = balance_dto.validate()
+        if errors:
+            return {'errors': errors}, 400
+        
+        try:
+            if user.add_balance(balance_dto.amount):
+                db.session.commit()
+                return {
+                    'message': 'Balance refunded successfully',
+                    'new_balance': float(user.account_balance)
+                }, 200
+            return {'error': 'Invalid amount'}, 400
+        
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error refunding balance: {str(e)}")
+            return {'error': 'Failed to refund balance'}, 500
     
     @staticmethod
     def upload_profile_picture(user_id, file):

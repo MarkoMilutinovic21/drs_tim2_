@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
-import { flightAPI, userAPI } from '../services/api';
+import { flightAPI, ratingAPI, userAPI } from '../services/api';
 import {
   formatDateTime,
   formatCurrency,
@@ -11,6 +11,8 @@ import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [pendingFlights, setPendingFlights] = useState([]);
+  const [approvedFlights, setApprovedFlights] = useState([]);
+  const [ratings, setRatings] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,7 +39,7 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([loadPendingFlights(), loadUsers()]);
+    await Promise.all([loadPendingFlights(), loadApprovedFlights(), loadUsers(), loadRatings()]);
     setLoading(false);
   };
 
@@ -47,6 +49,24 @@ const AdminDashboard = () => {
       setPendingFlights(response.data.flights);
     } catch (err) {
       console.error('Failed to load pending flights:', err);
+    }
+  };
+
+  const loadApprovedFlights = async () => {
+    try {
+      const response = await flightAPI.getAll({ status: 'APPROVED' });
+      setApprovedFlights(response.data.flights);
+    } catch (err) {
+      console.error('Failed to load approved flights:', err);
+    }
+  };
+
+  const loadRatings = async () => {
+    try {
+      const response = await ratingAPI.getAll();
+      setRatings(response.data.ratings);
+    } catch (err) {
+      console.error('Failed to load ratings:', err);
     }
   };
 
@@ -67,6 +87,7 @@ const AdminDashboard = () => {
       await flightAPI.approve(flightId);
       setSuccessMessage('Flight approved successfully');
       loadPendingFlights();
+      loadApprovedFlights();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to approve flight');
     }
@@ -90,6 +111,41 @@ const AdminDashboard = () => {
       loadPendingFlights();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to reject flight');
+    }
+  };
+
+  const handleCancelFlight = async (flightId) => {
+    if (!window.confirm('Cancel this flight?')) {
+      return;
+    }
+
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      await flightAPI.cancel(flightId);
+      setSuccessMessage('Flight cancelled successfully');
+      loadApprovedFlights();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to cancel flight');
+    }
+  };
+
+  const handleDeleteFlight = async (flightId) => {
+    if (!window.confirm('Delete this flight?')) {
+      return;
+    }
+
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      await flightAPI.delete(flightId);
+      setSuccessMessage('Flight deleted successfully');
+      loadApprovedFlights();
+      loadPendingFlights();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete flight');
     }
   };
 
@@ -254,6 +310,69 @@ const AdminDashboard = () => {
         )}
       </div>
 
+      {/* Approved Flights */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Approved Flights ({approvedFlights.length})</h2>
+        </div>
+
+        {approvedFlights.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary-color)' }}>
+            No approved flights
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Route</th>
+                  <th>Departure</th>
+                  <th>Duration</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {approvedFlights.map((flight) => (
+                  <tr key={flight.id}>
+                    <td>{flight.name}</td>
+                    <td>{flight.departure_airport} → {flight.arrival_airport}</td>
+                    <td>{formatDateTime(flight.departure_time)}</td>
+                    <td>{flight.duration_minutes} min</td>
+                    <td>${formatCurrency(flight.ticket_price)}</td>
+                    <td>
+                      <span className={`badge ${getStatusBadgeClass(flight.status)}`}>
+                        {formatFlightStatus(flight.status)}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        {flight.is_upcoming && (
+                          <button
+                            className="btn btn-warning btn-sm"
+                            onClick={() => handleCancelFlight(flight.id)}
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDeleteFlight(flight.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Users Management */}
       <div className="card">
         <div className="card-header">
@@ -303,6 +422,46 @@ const AdminDashboard = () => {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Ratings */}
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Flight Ratings ({ratings.length})</h2>
+        </div>
+
+        {ratings.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary-color)' }}>
+            No ratings yet
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Flight</th>
+                  <th>User</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Created At</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ratings.map((rating) => (
+                  <tr key={rating.id}>
+                    <td>
+                      {rating.flight?.name || `Flight #${rating.flight_id}`}
+                    </td>
+                    <td>{rating.user_email || `User #${rating.user_id}`}</td>
+                    <td>{rating.rating}/5</td>
+                    <td>{rating.comment || '-'}</td>
+                    <td>{formatDateTime(rating.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Reject Flight Modal */}

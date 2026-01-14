@@ -25,6 +25,18 @@
   border-bottom: 2px solid var(--border-color);
 }
 
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filters .form-input,
+.filters .form-select {
+  max-width: 280px;
+}
+
 .tab {
   padding: 1rem 1.5rem;
   background: none;
