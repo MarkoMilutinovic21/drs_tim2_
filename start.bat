@@ -38,7 +38,8 @@ echo Building and starting all services...
 echo This may take a few minutes on first run...
 echo.
 
-docker-compose up --build -d
+REM Force a valid project name (directory ends with underscore, which breaks image naming)
+docker-compose -p drs_tim2 up --build -d
 
 echo.
 echo ============================================

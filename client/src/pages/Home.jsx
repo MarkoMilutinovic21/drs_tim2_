@@ -65,13 +65,13 @@ const Home = () => {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">📊</div>
+            <div className="feature-icon">🛠️</div>
             <h3>Admin Dashboard</h3>
             <p>Comprehensive management tools for administrators</p>
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">🛫</div>
+            <div className="feature-icon">📅</div>
             <h3>Flight Management</h3>
             <p>Managers can create and manage flight schedules</p>
           </div>

@@ -6,7 +6,7 @@ import './Navbar.css';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout, isAdmin, isManager } = useAuth();
-  const { notifications, removeNotification } = useSocket();
+  const { notifications } = useSocket();
   const navigate = useNavigate();
 
   const handleLogout = async () => {

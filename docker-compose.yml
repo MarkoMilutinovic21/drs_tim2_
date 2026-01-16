@@ -35,7 +35,7 @@ services:
       MYSQL_USER: flight_user
       MYSQL_PASSWORD: flight_password
     ports:
-      - "3307:3306"
+      - "3309:3306"
     volumes:
       - db2_data:/var/lib/mysql
     networks:

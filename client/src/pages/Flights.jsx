@@ -38,11 +38,27 @@ const Flights = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const dedupeById = (list = []) => {
+    const seen = new Set();
+    return list.filter((flight) => {
+      const key = flight?.id;
+      if (key == null) return true;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  };
+
   const loadFlights = async () => {
     try {
       setLoading(true);
       const response = await flightAPI.getByTabs();
-      setFlights(response.data);
+      const data = response.data || {};
+      setFlights({
+        upcoming: dedupeById(data.upcoming),
+        ongoing: dedupeById(data.ongoing),
+        completed_cancelled: dedupeById(data.completed_cancelled)
+      });
       setError('');
     } catch (err) {
       setError('Failed to load flights');

@@ -525,7 +525,7 @@ const ManagerDashboard = () => {
             <div className="modal-header">
               <h2>Create Airline</h2>
               <button className="modal-close" onClick={() => { setShowAirlineModal(false); resetAirlineForm(); }}>
-                A-
+                ×
               </button>
             </div>
 

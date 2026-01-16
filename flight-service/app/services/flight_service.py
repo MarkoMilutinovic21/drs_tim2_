@@ -131,6 +131,7 @@ class FlightService:
             upcoming = []
             ongoing = []
             completed_cancelled = []
+            completed_ids = set()
             
             for flight in all_flights:
                 if flight.is_upcoming():
@@ -142,6 +143,7 @@ class FlightService:
                     if flight.status == 'APPROVED':
                         flight.complete()
                     completed_cancelled.append(flight.to_dict())
+                    completed_ids.add(flight.id)
             
             # Get cancelled flights
             cancelled_flights = Flight.query.filter_by(status='CANCELLED').all()
@@ -149,7 +151,10 @@ class FlightService:
             
             # Get completed flights
             completed_flights = Flight.query.filter_by(status='COMPLETED').all()
-            completed_cancelled.extend([f.to_dict() for f in completed_flights])
+            for flight in completed_flights:
+                if flight.id in completed_ids:
+                    continue
+                completed_cancelled.append(flight.to_dict())
             
             db.session.commit()
             
