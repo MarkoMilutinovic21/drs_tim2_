@@ -3,6 +3,9 @@ Flight service for managing flight operations.
 """
 from flask import current_app
 from datetime import datetime
+import os
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 from app import db
 from app.models import Flight, Booking
 from app.dto import FlightCreateDTO, FlightUpdateDTO, FlightApprovalDTO, FlightSearchDTO
@@ -10,6 +13,63 @@ from app.dto import FlightCreateDTO, FlightUpdateDTO, FlightApprovalDTO, FlightS
 
 class FlightService:
     """Service for handling flight operations."""
+
+    @staticmethod
+    def _generate_pdf_report(flights, report_type):
+        """
+        Generate a PDF report for the provided flights.
+        
+        Args:
+            flights: List of flight dictionaries
+            report_type: Report type string
+        
+        Returns:
+            str: Path to generated PDF file
+        """
+        reports_dir = current_app.config['PDF_FOLDER']
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        filename = f"flight_report_{report_type}_{timestamp}.pdf"
+        pdf_path = os.path.join(reports_dir, filename)
+        
+        c = canvas.Canvas(pdf_path, pagesize=A4)
+        width, height = A4
+        margin_left = 50
+        y = height - 50
+        
+        title = f"Flight Report - {report_type.replace('_', ' ').title()}"
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(margin_left, y, title)
+        y -= 24
+        
+        c.setFont("Helvetica", 10)
+        generated_at = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%SZ')
+        c.drawString(margin_left, y, f"Generated at: {generated_at}")
+        y -= 20
+        
+        if not flights:
+            c.drawString(margin_left, y, "No flights found for this tab.")
+            c.save()
+            return pdf_path
+        
+        for idx, flight in enumerate(flights, start=1):
+            lines = [
+                f"{idx}. {flight.get('name')} | {flight.get('departure_airport')} -> {flight.get('arrival_airport')}",
+                f"Departure: {flight.get('departure_time')} | Duration: {flight.get('duration_minutes')} min | Price: {flight.get('ticket_price')}",
+                f"Status: {flight.get('status')}"
+            ]
+            
+            for line in lines:
+                if y < 80:
+                    c.showPage()
+                    y = height - 50
+                    c.setFont("Helvetica", 10)
+                c.drawString(margin_left, y, line)
+                y -= 14
+            
+            y -= 6
+        
+        c.save()
+        return pdf_path
     
     @staticmethod
     def create_flight(flight_dto: FlightCreateDTO, created_by):
@@ -372,3 +432,33 @@ class FlightService:
             db.session.rollback()
             current_app.logger.error(f"Error deleting flight: {str(e)}")
             return {'error': 'Failed to delete flight'}, 500
+
+    @staticmethod
+    def generate_report(report_type):
+        """
+        Generate a PDF report for flights by tab.
+        
+        Args:
+            report_type: "upcoming", "ongoing", or "completed_cancelled"
+        
+        Returns:
+            tuple: (dict, int) - (response_data, status_code)
+        """
+        allowed = {'upcoming', 'ongoing', 'completed_cancelled'}
+        normalized_type = (report_type or '').strip().lower()
+        
+        if normalized_type not in allowed:
+            return {'error': 'Invalid report_type'}, 400
+        
+        response, status_code = FlightService.get_flights_by_tab()
+        if status_code != 200:
+            return response, status_code
+        
+        flights = response.get(normalized_type, [])
+        pdf_path = FlightService._generate_pdf_report(flights, normalized_type)
+        
+        return {
+            'message': 'Report generated successfully',
+            'report_type': normalized_type,
+            'pdf_path': pdf_path
+        }, 200

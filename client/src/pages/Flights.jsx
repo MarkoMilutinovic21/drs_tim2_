@@ -27,8 +27,9 @@ const Flights = () => {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [ratingData, setRatingData] = useState({ rating: 5, comment: '' });
+  const [reportLoading, setReportLoading] = useState(false);
 
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   useEffect(() => {
     loadFlights();
@@ -121,6 +122,24 @@ const Flights = () => {
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Failed to submit rating';
       setError(errorMsg);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    if (!user) return;
+
+    setReportLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      await flightAPI.generateReport(activeTab, user.id);
+      setSuccessMessage('Report generated and sent to your email.');
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Failed to generate report';
+      setError(errorMsg);
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -262,6 +281,15 @@ const Flights = () => {
         >
           Completed / Cancelled ({flights.completed_cancelled.length})
         </button>
+        {isAdmin() && (
+          <button
+            className="btn report-button"
+            onClick={handleGenerateReport}
+            disabled={reportLoading}
+          >
+            {reportLoading ? 'Generating...' : 'Email PDF Report'}
+          </button>
+        )}
       </div>
 
       <div className="filters">

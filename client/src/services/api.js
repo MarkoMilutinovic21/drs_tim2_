@@ -154,7 +154,13 @@ export const flightAPI = {
     flightServiceAPI.post(`/api/flights/${flightId}/cancel`),
   
   delete: (flightId) =>
-    flightServiceAPI.delete(`/api/flights/${flightId}`)
+    flightServiceAPI.delete(`/api/flights/${flightId}`),
+
+  generateReport: (reportType, adminId) =>
+    flightServiceAPI.post('/api/flights/report', {
+      report_type: reportType,
+      admin_id: adminId
+    })
 };
 
 // ==================== BOOKING API ====================

@@ -1,7 +1,7 @@
 """
 Flight management routes.
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_socketio import emit
 from app.services import FlightService
 from app.dto import FlightCreateDTO, FlightUpdateDTO, FlightApprovalDTO, FlightSearchDTO
@@ -94,6 +94,71 @@ def get_flights_by_tab():
     
     except Exception as e:
         return jsonify({'error': f'Failed to fetch flights by tab: {str(e)}'}), 500
+
+
+@flights_bp.route('/report', methods=['POST'])
+def generate_report():
+    """
+    Generate PDF report for a flight tab and email it to admin.
+    
+    POST /api/flights/report
+    Body: {
+        "report_type": "upcoming",
+        "admin_id": 1
+    }
+    """
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        report_type = data.get('report_type')
+        admin_id = data.get('admin_id')
+        
+        if not report_type or not admin_id:
+            return jsonify({'error': 'report_type and admin_id are required'}), 400
+        
+        response, status_code = FlightService.generate_report(report_type)
+        
+        if status_code != 200:
+            return jsonify(response), status_code
+        
+        pdf_path = response.get('pdf_path')
+        normalized_type = response.get('report_type')
+        
+        try:
+            server_url = current_app.config['SERVER_URL']
+            with open(pdf_path, 'rb') as pdf_file:
+                notify_response = requests.post(
+                    f"{server_url}/api/notifications/flight-report",
+                    data={
+                        'user_id': admin_id,
+                        'report_type': normalized_type
+                    },
+                    files={
+                        'file': ('flight_report.pdf', pdf_file, 'application/pdf')
+                    },
+                    timeout=10
+                )
+            
+            if notify_response.status_code != 200:
+                current_app.logger.error(
+                    f"Report email failed: {notify_response.status_code} - {notify_response.text}"
+                )
+                return jsonify({'error': 'Failed to send report email'}), 502
+        
+        except Exception as e:
+            current_app.logger.error(f"Failed to send report email: {str(e)}")
+            return jsonify({'error': 'Failed to send report email'}), 502
+        
+        return jsonify({
+            'message': 'Report generated and emailed successfully',
+            'report_type': normalized_type
+        }), 200
+    
+    except Exception as e:
+        return jsonify({'error': f'Failed to generate report: {str(e)}'}), 500
 
 
 @flights_bp.route('/pending', methods=['GET'])
