@@ -2,6 +2,18 @@
 
 Distributed flight booking system with microservices architecture built with Flask, React, MySQL, Redis, and Docker.
 
+## 📧 Email Configuration Status
+
+**✅ CONFIGURED**: This project sends **real emails** via Gmail SMTP.
+
+- **Email Account**: `drsprojekat30@gmail.com`
+- **Status**: Active and configured
+- **Critical Fix**: App Password must be **without spaces** in `.env` file
+- **See**: [RESENJE_EMAIL_PROBLEMA.md](./RESENJE_EMAIL_PROBLEMA.md) for complete fix details
+- **Test**: Run `test-email.bat` to verify email functionality
+
+---
+
 ## 🏗️ Architecture
 
 ### Components:
@@ -47,6 +59,24 @@ Distributed flight booking system with microservices architecture built with Fla
 git clone <repository-url>
 cd flight-booking-system
 ```
+
+2. **Start all services:**
+
+   **Option A - Use restart script (Windows):**
+   ```bash
+   RESTART.bat
+   ```
+
+   **Option B - Manual start:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+3. **Verify services are running:**
+   ```bash
+   docker-compose ps
+   ```
+   All services should show status "Up"
 
 2. Start all services:
 ```bash

@@ -63,16 +63,18 @@ services:
       timeout: 5s
       retries: 5
 
-  # Mailhog - Local SMTP testing
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: flight_booking_mailhog
-    restart: always
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    networks:
-      - flight_network
+  # Mailhog - Local SMTP testing (DISABLED - Using real Gmail)
+  # Uncomment this service to use mock emails instead of real Gmail
+  # Access MailHog UI at: http://localhost:8025
+  # mailhog:
+  #   image: mailhog/mailhog:latest
+  #   container_name: flight_booking_mailhog
+  #   restart: always
+  #   ports:
+  #     - "1025:1025"
+  #     - "8025:8025"
+  #   networks:
+  #     - flight_network
 
   # Server - Main Backend Service
   server:
@@ -83,27 +85,26 @@ services:
     restart: always
     ports:
       - "5000:5000"
+    # Load Gmail credentials from .env file
+    env_file:
+      - ./server/.env
     environment:
+      # Core Configuration (Database, Redis, Services)
       FLASK_ENV: development
       DATABASE_URL: mysql+pymysql://flight_user:flight_password@db1:3306/flight_booking_db
       REDIS_URL: redis://redis:6379/0
       FLIGHT_SERVICE_URL: http://flight-service:5001
       SECRET_KEY: your-secret-key-change-in-production
       JWT_SECRET_KEY: your-jwt-secret-key-change-in-production
-      MAIL_SERVER: mailhog
-      MAIL_PORT: 1025
-      MAIL_USE_TLS: False
-      MAIL_USE_SSL: False
-      MAIL_USERNAME: ""
-      MAIL_PASSWORD: ""
-      MAIL_DEFAULT_SENDER: noreply@flightbooking.com
+      # NOTE: MAIL_* variables are loaded from server/.env file
+      # Do NOT add MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, etc. here
+      # They will override the .env file and cause authentication issues
     depends_on:
       db1:
         condition: service_healthy
       redis:
         condition: service_healthy
-      mailhog:
-        condition: service_started
+      # MailHog disabled - using real Gmail SMTP from .env file
     networks:
       - flight_network
     volumes:
