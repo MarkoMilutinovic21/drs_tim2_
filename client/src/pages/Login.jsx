@@ -67,7 +67,7 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page login-page">
       <div className="auth-container">
         <div className="auth-card">
           <h2 className="auth-title">Login</h2>

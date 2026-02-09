@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { flightAPI, airlineAPI } from '../services/api';
+import Modal from '../components/Common/Modal';
 import {
   formatDateTime,
   formatCurrency,
@@ -371,9 +372,11 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Create Flight Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => { setShowCreateModal(false); resetForm(); }}
+        contentClassName="modal-content modal-large"
+      >
             <div className="modal-header">
               <h2>Create New Flight</h2>
               <button className="modal-close" onClick={() => { setShowCreateModal(false); resetForm(); }}>
@@ -514,14 +517,14 @@ const ManagerDashboard = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Create Airline Modal */}
-      {showAirlineModal && (
-        <div className="modal-overlay" onClick={() => setShowAirlineModal(false)}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={showAirlineModal}
+        onClose={() => { setShowAirlineModal(false); resetAirlineForm(); }}
+        contentClassName="modal-content modal-large"
+      >
             <div className="modal-header">
               <h2>Create Airline</h2>
               <button className="modal-close" onClick={() => { setShowAirlineModal(false); resetAirlineForm(); }}>
@@ -608,14 +611,15 @@ const ManagerDashboard = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Edit Flight Modal (same structure as Create) */}
-      {showEditModal && selectedFlight && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+      {selectedFlight && (
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => { setShowEditModal(false); setSelectedFlight(null); resetForm(); }}
+          contentClassName="modal-content modal-large"
+        >
             <div className="modal-header">
               <h2>Edit Flight: {selectedFlight.name}</h2>
               <button className="modal-close" onClick={() => { setShowEditModal(false); setSelectedFlight(null); resetForm(); }}>
@@ -753,8 +757,7 @@ const ManagerDashboard = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

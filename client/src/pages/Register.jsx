@@ -142,7 +142,7 @@ const Register = () => {
 
   if (success) {
     return (
-      <div className="auth-page">
+      <div className="auth-page register-page">
         <div className="auth-container">
           <div className="auth-card">
             <div className="alert alert-success">
@@ -156,7 +156,7 @@ const Register = () => {
   }
 
   return (
-    <div className="auth-page">
+    <div className="auth-page register-page">
       <div className="auth-container">
         <div className="auth-card">
           <h2 className="auth-title">Register</h2>

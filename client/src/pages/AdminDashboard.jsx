@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSocket } from '../context/SocketContext';
 import { flightAPI, ratingAPI, userAPI } from '../services/api';
+import Modal from '../components/Common/Modal';
 import {
   formatDateTime,
   formatCurrency,
@@ -465,9 +466,12 @@ const AdminDashboard = () => {
       </div>
 
       {/* Reject Flight Modal */}
-      {showRejectModal && selectedFlight && (
-        <div className="modal-overlay" onClick={() => setShowRejectModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {selectedFlight && (
+        <Modal
+          isOpen={showRejectModal}
+          onClose={() => setShowRejectModal(false)}
+          contentClassName="modal-content"
+        >
             <div className="modal-header">
               <h2>Reject Flight: {selectedFlight.name}</h2>
               <button className="modal-close" onClick={() => setShowRejectModal(false)}>
@@ -496,14 +500,16 @@ const AdminDashboard = () => {
                 Reject Flight
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
 
       {/* Change Role Modal */}
-      {showRoleModal && selectedUser && (
-        <div className="modal-overlay" onClick={() => setShowRoleModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {selectedUser && (
+        <Modal
+          isOpen={showRoleModal}
+          onClose={() => setShowRoleModal(false)}
+          contentClassName="modal-content"
+        >
             <div className="modal-header">
               <h2>Change Role: {selectedUser.first_name} {selectedUser.last_name}</h2>
               <button className="modal-close" onClick={() => setShowRoleModal(false)}>
@@ -534,8 +540,7 @@ const AdminDashboard = () => {
                 Update Role
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -18,7 +18,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          ✈️ Flight Booking
+          Flight Booking
         </Link>
 
         <div className="navbar-menu">
@@ -35,7 +35,7 @@ const Navbar = () => {
               )}
 
               {isAdmin() && (
-                <>
+                <div className="navbar-link-group">
                   <Link to="/admin" className="navbar-link">
                     Admin Dashboard
                   </Link>
@@ -44,7 +44,7 @@ const Navbar = () => {
                       {notifications.length}
                     </div>
                   )}
-                </>
+                </div>
               )}
 
               <Link to="/profile" className="navbar-link">
@@ -65,7 +65,7 @@ const Navbar = () => {
                 </div>
               </div>
 
-              <button onClick={handleLogout} className="btn btn-secondary">
+              <button onClick={handleLogout} className="navbar-cta navbar-cta-secondary">
                 Logout
               </button>
             </>
@@ -75,7 +75,7 @@ const Navbar = () => {
                 Login
               </Link>
               <Link to="/register">
-                <button className="btn btn-primary">Register</button>
+                <button className="navbar-cta navbar-cta-primary">Register</button>
               </Link>
             </>
           )}

@@ -1,5 +1,4 @@
 name: drs_tim2
-version: '3.8'
 
 services:
   # Database 1 - Server Database (Users, Airlines, Login Attempts)

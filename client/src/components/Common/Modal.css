@@ -1,0 +1,142 @@
+.app-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(2, 8, 23, 0.72);
+}
+
+.app-modal-content {
+  width: min(92vw, 560px);
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.9rem;
+  background: rgba(17, 25, 40, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 24px 38px rgba(2, 8, 23, 0.55);
+}
+
+.app-modal-content.modal-large {
+  width: min(94vw, 700px);
+}
+
+.app-modal-content .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.app-modal-content .modal-header h2 {
+  color: #f8fbff;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.app-modal-content .modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.65rem;
+  color: rgba(203, 226, 255, 0.9);
+  cursor: pointer;
+  line-height: 1;
+}
+
+.app-modal-content .modal-close:hover {
+  color: #ffffff;
+}
+
+.app-modal-content .modal-body {
+  padding: 1.1rem;
+}
+
+.app-modal-content .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.app-modal-content .modal-body .form-label {
+  color: rgba(235, 245, 255, 0.95);
+}
+
+.app-modal-content .modal-body .form-input,
+.app-modal-content .modal-body .form-select,
+.app-modal-content .modal-body .form-textarea {
+  background: rgba(15, 23, 42, 0.74);
+  border: 1px solid rgba(148, 163, 184, 0.46);
+  color: #e2ecff;
+}
+
+.app-modal-overlay.modal-state-open {
+  animation: modal-overlay-in 180ms ease forwards;
+}
+
+.app-modal-overlay.modal-state-closing {
+  animation: modal-overlay-out 180ms ease forwards;
+}
+
+.app-modal-content.modal-state-open {
+  animation: modal-content-in 180ms ease forwards;
+}
+
+.app-modal-content.modal-state-closing {
+  animation: modal-content-out 180ms ease forwards;
+}
+
+@keyframes modal-overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-overlay-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modal-content-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-modal-overlay.modal-state-open,
+  .app-modal-overlay.modal-state-closing,
+  .app-modal-content.modal-state-open,
+  .app-modal-content.modal-state-closing {
+    animation: none;
+  }
+}

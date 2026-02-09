@@ -1,52 +1,76 @@
 .admin-dashboard {
   max-width: 1400px;
   margin: 0 auto;
+  color: #e7f1ff;
+}
+
+.admin-dashboard .page-header h1 {
+  color: #f8fbff;
+}
+
+.admin-dashboard .page-header p {
+  color: rgba(203, 226, 255, 0.9);
 }
 
 .notifications-panel {
-  background: white;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow);
+  border-radius: 0.85rem;
+  padding: 1.2rem;
+  margin-bottom: 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(17, 25, 40, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .notifications-panel h3 {
-  margin-bottom: 1rem;
-  color: var(--text-color);
+  margin-bottom: 0.9rem;
+  color: #f8fbff;
 }
 
 .notifications-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 .notification-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background-color: #dbeafe;
-  border-left: 4px solid var(--primary-color);
-  border-radius: 0.5rem;
-  color: #1e40af;
+  padding: 0.68rem 0.9rem;
+  background-color: rgba(14, 165, 233, 0.17);
+  border-left: 4px solid #38bdf8;
+  border-radius: 0.45rem;
+  color: #bae6fd;
 }
 
 .notification-dismiss {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  color: #1e40af;
-  padding: 0;
-  width: 24px;
-  height: 24px;
+  color: #7dd3fc;
   line-height: 1;
 }
 
 .notification-dismiss:hover {
-  color: #1e3a8a;
+  color: #e0f2fe;
+}
+
+.admin-dashboard .card {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(17, 25, 40, 0.62);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-bottom: 1.2rem;
+}
+
+.admin-dashboard .card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.admin-dashboard .card-title {
+  color: #f8fbff;
 }
 
 .action-buttons {
@@ -55,12 +79,111 @@
 }
 
 .btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.82rem;
 }
 
 .table-container {
   overflow-x: auto;
+}
+
+.admin-dashboard .table {
+  background: transparent;
+  box-shadow: none;
+}
+
+.admin-dashboard .table th,
+.admin-dashboard .table td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(230, 241, 255, 0.94);
+}
+
+.admin-dashboard .table th {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fbff;
+}
+
+.admin-dashboard .table tr:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-dashboard .badge-info {
+  background-color: rgba(14, 165, 233, 0.22);
+  color: #bae6fd;
+}
+
+.admin-dashboard .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(2, 8, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.admin-dashboard .modal-content {
+  width: 90%;
+  max-width: 560px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.9rem;
+  background: rgba(17, 25, 40, 0.86);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.admin-dashboard .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.15rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.admin-dashboard .modal-header h2 {
+  color: #f8fbff;
+  font-size: 1.2rem;
+}
+
+.admin-dashboard .modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: rgba(203, 226, 255, 0.9);
+  cursor: pointer;
+}
+
+.admin-dashboard .modal-body {
+  padding: 1.1rem;
+}
+
+.admin-dashboard .modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.admin-dashboard .modal-body .form-label {
+  color: rgba(235, 245, 255, 0.95);
+}
+
+.admin-dashboard .modal-body .form-select,
+.admin-dashboard .modal-body .form-textarea,
+.admin-dashboard .modal-body .form-input {
+  background: rgba(15, 23, 42, 0.74);
+  border: 1px solid rgba(148, 163, 184, 0.46);
+  color: #e2ecff;
+}
+
+.alert-close {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0 0.35rem;
 }
 
 @media (max-width: 768px) {

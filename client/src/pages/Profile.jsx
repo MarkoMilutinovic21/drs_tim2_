@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { userAPI, bookingAPI } from '../services/api';
+import Modal from '../components/Common/Modal';
 import { formatDate, formatCurrency, formatDateTime, getStatusBadgeClass, formatBookingStatus } from '../utils/formatters';
 import { validatePositiveNumber, validateRequired, validateEmail, validateDateOfBirth } from '../utils/validators';
 import { getProfilePictureUrl } from '../utils/profileHelpers';
@@ -302,9 +303,11 @@ const Profile = () => {
       </div>
 
       {/* Add Balance Modal */}
-      {showAddBalanceModal && (
-        <div className="modal-overlay" onClick={() => setShowAddBalanceModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={showAddBalanceModal}
+        onClose={() => setShowAddBalanceModal(false)}
+        contentClassName="modal-content"
+      >
             <div className="modal-header">
               <h2>Add Balance</h2>
               <button className="modal-close" onClick={() => setShowAddBalanceModal(false)}>
@@ -335,14 +338,14 @@ const Profile = () => {
                 Add Balance
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
 
       {/* Edit Profile Modal */}
-      {showEditModal && (
-        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        contentClassName="modal-content modal-large"
+      >
             <div className="modal-header">
               <h2>Edit Profile</h2>
               <button className="modal-close" onClick={() => setShowEditModal(false)}>
@@ -473,11 +476,10 @@ const Profile = () => {
                 Save Changes
               </button>
             </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 };
 
 export default Profile;
+

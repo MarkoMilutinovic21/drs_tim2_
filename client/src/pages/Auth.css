@@ -1,14 +1,27 @@
 .auth-page {
-  min-height: calc(100vh - 80px);
+  height: 100%;
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 0.5rem 1rem;
+  overflow: hidden;
+}
+
+.login-page {
+  position: relative;
+}
+
+.register-page {
+  position: relative;
 }
 
 .auth-container {
   width: 100%;
   max-width: 600px;
+  max-height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-card {
@@ -16,6 +29,44 @@
   border-radius: 0.75rem;
   padding: 2.5rem;
   box-shadow: var(--shadow-lg);
+}
+
+.login-page .auth-card {
+  max-width: 480px;
+  margin: 0 auto;
+  background: rgba(17, 25, 40, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.35);
+}
+
+.register-page .auth-container {
+  max-width: 860px;
+  height: 100%;
+}
+
+.register-page .auth-card {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(17, 25, 40, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #e2ecff;
+  border-radius: 1rem;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.35);
+}
+
+.register-page .auth-card::-webkit-scrollbar {
+  width: 10px;
+}
+
+.register-page .auth-card::-webkit-scrollbar-thumb {
+  background: rgba(125, 211, 252, 0.4);
+  border-radius: 999px;
 }
 
 .auth-title {
@@ -26,10 +77,29 @@
   text-align: center;
 }
 
+.login-page .auth-title {
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+}
+
 .auth-subtitle {
   color: var(--secondary-color);
   text-align: center;
   margin-bottom: 2rem;
+}
+
+.login-page .auth-subtitle {
+  color: rgba(235, 245, 255, 0.88);
+}
+
+.register-page .auth-title {
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
+
+.register-page .auth-subtitle {
+  color: rgba(219, 234, 254, 0.9);
 }
 
 .form-row {
@@ -53,14 +123,97 @@
   color: var(--secondary-color);
 }
 
+.login-page .form-label {
+  color: rgba(240, 247, 255, 0.95);
+}
+
+.register-page .form-label {
+  color: rgba(235, 245, 255, 0.95);
+}
+
+.login-page .form-input {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: #e2ecff;
+}
+
+.register-page .form-input,
+.register-page .form-select,
+.register-page .form-textarea {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.48);
+  color: #e2ecff;
+}
+
+.login-page .form-input::placeholder {
+  color: rgba(191, 219, 254, 0.78);
+}
+
+.login-page .form-input:focus {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.25);
+}
+
+.register-page .form-input:focus,
+.register-page .form-select:focus,
+.register-page .form-textarea:focus {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.2);
+}
+
+.login-page .btn-primary {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.login-page .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0284c7, #1d4ed8);
+}
+
+.register-page .btn-primary {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.register-page .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0284c7, #1d4ed8);
+}
+
+.login-page .auth-footer {
+  color: rgba(235, 245, 255, 0.88);
+}
+
+.register-page .auth-footer {
+  color: rgba(235, 245, 255, 0.88);
+}
+
 .auth-link {
   color: var(--primary-color);
   text-decoration: none;
   font-weight: 500;
 }
 
+.login-page .auth-link {
+  color: #7dd3fc;
+}
+
+.register-page .auth-link {
+  color: #7dd3fc;
+}
+
 .auth-link:hover {
   text-decoration: underline;
+}
+
+.login-page .alert-error {
+  background: rgba(127, 29, 29, 0.45);
+  color: #fee2e2;
+  border-left-color: #ef4444;
+}
+
+.register-page small {
+  color: rgba(219, 234, 254, 0.8) !important;
 }
 
 @media (max-width: 768px) {
@@ -70,5 +223,9 @@
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .register-page .auth-container {
+    max-width: 100%;
   }
 }

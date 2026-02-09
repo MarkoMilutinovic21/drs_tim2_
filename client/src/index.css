@@ -15,6 +15,13 @@
   --border-color: #e2e8f0;
   --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --app-bg-image: url('./assets/LoginBackground.png');
+  --navbar-height: 76px;
+  --input-bg: rgba(15, 23, 42, 0.62);
+  --input-bg-focus: rgba(15, 23, 42, 0.72);
+  --input-border: rgba(148, 163, 184, 0.5);
+  --input-text: #e2ecff;
+  --input-placeholder: rgba(191, 219, 254, 0.78);
 }
 
 body {
@@ -23,15 +30,35 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--background-color);
+  background-color: #0b1526;
+  background-image: var(--app-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text-color);
   line-height: 1.6;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  isolation: isolate;
+}
+
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(145deg, rgba(7, 16, 31, 0.75), rgba(16, 30, 54, 0.45));
+  pointer-events: none;
+  z-index: -1;
 }
 
 .main-content {
@@ -40,6 +67,30 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+}
+
+.main-content.main-content-auth {
+  max-width: 100%;
+  height: calc(100vh - var(--navbar-height));
+  padding: 1rem 2rem;
+  overflow: hidden;
+}
+
+.route-transition {
+  animation: page-enter 260ms ease both;
+}
+
+.main-content.main-content-auth .route-transition {
+  height: 100%;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Buttons */
@@ -107,17 +158,47 @@ body {
 .form-textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--input-border);
   border-radius: 0.5rem;
   font-size: 1rem;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+  background: var(--input-bg);
+  color: var(--input-text);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--input-placeholder);
 }
 
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: var(--primary-color);
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.2);
+  background: var(--input-bg-focus);
+}
+
+.form-select option {
+  background: #0f172a;
+  color: #e2ecff;
+}
+
+/* Prevent browser autofill from forcing bright backgrounds */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-select:-webkit-autofill,
+.form-select:-webkit-autofill:hover,
+.form-select:-webkit-autofill:focus,
+.form-textarea:-webkit-autofill,
+.form-textarea:-webkit-autofill:hover,
+.form-textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--input-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg-focus) inset;
+  box-shadow: 0 0 0 1000px var(--input-bg-focus) inset;
+  transition: background-color 9999s ease-in-out 0s;
 }
 
 .form-error {
@@ -259,6 +340,11 @@ body {
   .main-content {
     padding: 1rem;
   }
+
+  .main-content.main-content-auth {
+    height: calc(100vh - var(--navbar-height));
+    padding: 0.75rem 1rem 1rem;
+  }
   
   .table {
     font-size: 0.875rem;
@@ -267,5 +353,11 @@ body {
   .table th,
   .table td {
     padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-transition {
+    animation: none;
   }
 }

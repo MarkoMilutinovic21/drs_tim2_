@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { flightAPI, bookingAPI, ratingAPI, airlineAPI } from '../services/api';
 import { useFlightTimer } from '../hooks/useFlightTimer';
+import Modal from '../components/Common/Modal';
 import {
   formatDateTime,
   formatCurrency,
@@ -29,15 +30,18 @@ const Flights = () => {
   const [ratingData, setRatingData] = useState({ rating: 5, comment: '' });
   const [reportLoading, setReportLoading] = useState(false);
 
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isRegularUser } = useAuth();
 
   useEffect(() => {
+    if (!user) return;
     loadFlights();
-    loadAirlines();
+    if (!isRegularUser()) {
+      loadAirlines();
+    }
     // Refresh flights every 30 seconds
     const interval = setInterval(loadFlights, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const dedupeById = (list = []) => {
     const seen = new Set();
@@ -53,13 +57,33 @@ const Flights = () => {
   const loadFlights = async () => {
     try {
       setLoading(true);
-      const response = await flightAPI.getByTabs();
-      const data = response.data || {};
-      setFlights({
-        upcoming: dedupeById(data.upcoming),
-        ongoing: dedupeById(data.ongoing),
-        completed_cancelled: dedupeById(data.completed_cancelled)
-      });
+      if (isRegularUser() && user?.id) {
+        const response = await bookingAPI.getUserBookings(user.id);
+        const bookings = response.data?.bookings || [];
+        const userFlights = dedupeById(
+          bookings
+            .map((booking) => booking.flight)
+            .filter(Boolean)
+        );
+
+        const grouped = {
+          upcoming: userFlights.filter((flight) => flight.status === 'APPROVED'),
+          ongoing: userFlights.filter((flight) => flight.status === 'IN_PROGRESS'),
+          completed_cancelled: userFlights.filter(
+            (flight) => flight.status === 'COMPLETED' || flight.status === 'CANCELLED'
+          )
+        };
+
+        setFlights(grouped);
+      } else {
+        const response = await flightAPI.getByTabs();
+        const data = response.data || {};
+        setFlights({
+          upcoming: dedupeById(data.upcoming),
+          ongoing: dedupeById(data.ongoing),
+          completed_cancelled: dedupeById(data.completed_cancelled)
+        });
+      }
       setError('');
     } catch (err) {
       setError('Failed to load flights');
@@ -161,7 +185,6 @@ const Flights = () => {
               <span className="airport-label">From</span>
               <span className="airport-name">{flight.departure_airport}</span>
             </div>
-            <div className="flight-arrow">✈️</div>
             <div className="airport">
               <span className="airport-label">To</span>
               <span className="airport-name">{flight.arrival_airport}</span>
@@ -196,7 +219,7 @@ const Flights = () => {
         </div>
 
         <div className="flight-actions">
-          {activeTab === 'upcoming' && (
+          {activeTab === 'upcoming' && !isRegularUser() && (
             <button
               className="btn btn-primary"
               onClick={() => handleBookFlight(flight.id)}
@@ -244,8 +267,8 @@ const Flights = () => {
   return (
     <div className="flights-page">
       <div className="page-header">
-        <h1>Flights</h1>
-        <p>Browse and book available flights</p>
+        <h1>{isRegularUser() ? 'My Flights' : 'Flights'}</h1>
+        <p>{isRegularUser() ? 'Your booked flights' : 'Browse and book available flights'}</p>
       </div>
 
       {error && (
@@ -325,9 +348,12 @@ const Flights = () => {
       </div>
 
       {/* Rating Modal */}
-      {showRatingModal && selectedFlight && (
-        <div className="modal-overlay" onClick={() => setShowRatingModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {selectedFlight && (
+        <Modal
+          isOpen={showRatingModal}
+          onClose={() => setShowRatingModal(false)}
+          contentClassName="modal-content"
+        >
             <div className="modal-header">
               <h2>Rate Flight: {selectedFlight.name}</h2>
               <button className="modal-close" onClick={() => setShowRatingModal(false)}>
@@ -371,8 +397,7 @@ const Flights = () => {
                 Submit Rating
               </button>
             </div>
-          </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
