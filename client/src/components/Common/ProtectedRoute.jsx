@@ -18,13 +18,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
-    return (
-      <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-        <h2>Access Denied</h2>
-        <p>You do not have permission to access this page.</p>
-        <p>Required role: <strong>{requiredRole}</strong></p>
-      </div>
-    );
+    return <Navigate to="/flights" replace />;
   }
 
   return children;

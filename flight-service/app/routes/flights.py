@@ -215,6 +215,14 @@ def approve_reject_flight(flight_id):
         
         # Approve/reject flight
         response, status_code = FlightService.approve_reject_flight(flight_id, approval_dto)
+
+        if status_code == 200:
+            flight_data = response.get('flight') or {}
+            socketio.emit('flight_status_changed', {
+                'flight_id': flight_id,
+                'status': flight_data.get('status'),
+                'rejection_reason': flight_data.get('rejection_reason')
+            }, namespace='/')
         
         return jsonify(response), status_code
     

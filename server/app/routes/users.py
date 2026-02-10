@@ -7,7 +7,7 @@ from app.utils.jwt_helpers import get_current_user_id
 from app.services import UserService
 from app.dto import UserUpdateDTO, PasswordChangeDTO, BalanceUpdateDTO, RoleUpdateDTO
 from app.utils import admin_required, account_active_required
-from app import db
+from app import db, socketio
 from app.models import User
 
 users_bp = Blueprint('users', __name__)
@@ -224,6 +224,12 @@ def update_user_role(user_id):
         
         # Update role
         response, status_code = UserService.update_role(user_id, new_role)
+
+        if status_code == 200:
+            socketio.emit('role_changed', {
+                'user_id': user_id,
+                'new_role': new_role
+            }, namespace='/')
         
         return jsonify(response), status_code
     

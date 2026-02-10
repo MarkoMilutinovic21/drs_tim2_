@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { flightAPI, airlineAPI } from '../services/api';
 import Modal from '../components/Common/Modal';
 import {
@@ -46,10 +47,32 @@ const ManagerDashboard = () => {
   const [airlineErrors, setAirlineErrors] = useState({});
 
   const { user } = useAuth();
+  const { socket } = useSocket();
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // Auto-dismiss success message after 3s
+  useEffect(() => {
+    if (!successMessage) return undefined;
+    const timeout = setTimeout(() => setSuccessMessage(''), 3000);
+    return () => clearTimeout(timeout);
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (!socket) return undefined;
+
+    const handleStatusChange = () => {
+      loadFlights();
+    };
+
+    socket.on('flight_status_changed', handleStatusChange);
+
+    return () => {
+      socket.off('flight_status_changed', handleStatusChange);
+    };
+  }, [socket]);
 
   const loadData = async () => {
     setLoading(true);

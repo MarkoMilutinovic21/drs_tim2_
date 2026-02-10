@@ -27,7 +27,7 @@ const AdminDashboard = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
-  const { notifications, removeNotification } = useSocket();
+  const { notifications, removeNotification, clearNotifications } = useSocket();
 
   useEffect(() => {
     loadData();
@@ -39,6 +39,22 @@ const AdminDashboard = () => {
       loadPendingFlights();
     }
   }, [notifications]);
+
+  // Auto-dismiss notifications shortly after admin sees the dashboard
+  useEffect(() => {
+    if (notifications.length === 0) return undefined;
+    const timeout = setTimeout(() => {
+      clearNotifications();
+    }, 2500);
+    return () => clearTimeout(timeout);
+  }, [notifications]);
+
+  // Auto-dismiss success message after 3s
+  useEffect(() => {
+    if (!successMessage) return undefined;
+    const timeout = setTimeout(() => setSuccessMessage(''), 3000);
+    return () => clearTimeout(timeout);
+  }, [successMessage]);
 
   const loadData = async () => {
     setLoading(true);
@@ -178,6 +194,10 @@ const AdminDashboard = () => {
       setShowRoleModal(false);
       setSelectedUser(null);
       setNewRole('');
+      localStorage.setItem(
+        'roleUpdate',
+        JSON.stringify({ userId: selectedUser.id, newRole, at: Date.now() })
+      );
       loadUsers();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update role');
@@ -247,12 +267,12 @@ const AdminDashboard = () => {
         <div className="notifications-panel">
           <h3>Recent Notifications ({notifications.length})</h3>
           <div className="notifications-list">
-            {notifications.slice(0, 5).map((notif, index) => (
-              <div key={index} className="notification-item">
+            {notifications.slice(0, 5).map((notif) => (
+              <div key={notif.id} className="notification-item">
                 <span>{notif.message}</span>
                 <button
                   className="notification-dismiss"
-                  onClick={() => removeNotification(index)}
+                  onClick={() => removeNotification(notif.id)}
                 >
                   ×
                 </button>
@@ -617,3 +637,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+

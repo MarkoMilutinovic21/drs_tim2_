@@ -45,6 +45,12 @@ const Flights = () => {
     return () => clearInterval(interval);
   }, [user]);
 
+  useEffect(() => {
+    if (!successMessage) return undefined;
+    const timeout = setTimeout(() => setSuccessMessage(''), 3000);
+    return () => clearTimeout(timeout);
+  }, [successMessage]);
+
   const dedupeById = (list = []) => {
     const seen = new Set();
     return list.filter((flight) => {

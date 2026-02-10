@@ -17,6 +17,52 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
+  // Listen for role updates from other tabs (admin role change)
+  useEffect(() => {
+    const handleStorage = (event) => {
+      if (event.key !== 'roleUpdate' || !event.newValue) return;
+      try {
+        const payload = JSON.parse(event.newValue);
+        if (payload?.userId && user?.id === payload.userId) {
+          loadUser();
+        }
+      } catch (err) {
+        // ignore invalid payload
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [user]);
+
+  // Refresh user on focus/visibility change and periodically (works across incognito tabs)
+  useEffect(() => {
+    if (!token) return undefined;
+
+    const handleFocus = () => {
+      loadUser();
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        loadUser();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    const interval = setInterval(() => {
+      loadUser();
+    }, 20000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      clearInterval(interval);
+    };
+  }, [token]);
+
   const loadUser = async () => {
     try {
       const response = await authAPI.getCurrentUser();

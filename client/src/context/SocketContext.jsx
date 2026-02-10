@@ -8,9 +8,11 @@ const FLIGHT_SERVICE_URL = 'http://localhost:5001';
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
+  const [serverSocket, setServerSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, refreshUser, user } = useAuth();
+  const SERVER_URL = 'http://localhost:5000';
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -45,26 +47,48 @@ export const SocketProvider = ({ children }) => {
 
       setSocket(newSocket);
 
+      // Connect to Server WebSocket (role updates)
+      const newServerSocket = io(SERVER_URL, {
+        transports: ['websocket'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
+      });
+
+      newServerSocket.on('role_changed', (payload) => {
+        if (payload?.user_id && user?.id === payload.user_id) {
+          refreshUser();
+        }
+      });
+
+      setServerSocket(newServerSocket);
+
       return () => {
         newSocket.disconnect();
+        newServerSocket.disconnect();
       };
     }
-  }, [isAuthenticated()]);
+  }, [isAuthenticated(), user?.id]);
 
   const addNotification = (notification) => {
-    setNotifications((prev) => [notification, ...prev].slice(0, 50)); // Keep last 50
+    const id = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    const next = { id, ...notification };
+    setNotifications((prev) => [next, ...prev].slice(0, 50));
+
+    // Dismiss when user explicitly clears (no auto-dismiss here)
   };
 
   const clearNotifications = () => {
     setNotifications([]);
   };
 
-  const removeNotification = (index) => {
-    setNotifications((prev) => prev.filter((_, i) => i !== index));
+  const removeNotification = (id) => {
+    setNotifications((prev) => prev.filter((item) => item.id !== id));
   };
 
   const value = {
     socket,
+    serverSocket,
     connected,
     notifications,
     addNotification,
