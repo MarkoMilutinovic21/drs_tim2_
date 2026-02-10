@@ -34,6 +34,14 @@ flightServiceAPI.interceptors.request.use(addAuthToken);
 // Handle 401 errors (unauthorized)
 const handleUnauthorized = (error) => {
   if (error.response?.status === 401) {
+    const url = error.config?.url || '';
+    if (
+      url.includes('/api/auth/login') ||
+      url.includes('/api/auth/register') ||
+      url.includes('/api/auth/refresh')
+    ) {
+      return Promise.reject(error);
+    }
     localStorage.removeItem('token');
     window.location.href = '/login';
   }
