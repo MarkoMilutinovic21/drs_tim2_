@@ -155,6 +155,17 @@
 
 .admin-dashboard .modal-body {
   padding: 1.1rem;
+  color: #f8fbff;
+}
+
+.app-modal-content .confirm-text {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.app-modal-content .modal-body p {
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 .admin-dashboard .modal-footer {

@@ -24,6 +24,8 @@ const AdminDashboard = () => {
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newRole, setNewRole] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showDeleteUserModal, setShowDeleteUserModal] = useState(false);
 
   const { notifications, removeNotification } = useSocket();
 
@@ -115,17 +117,17 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleCancelFlight = async (flightId) => {
-    if (!window.confirm('Cancel this flight?')) {
-      return;
-    }
+  const handleCancelFlight = async () => {
+    if (!selectedFlight) return;
 
     setError('');
     setSuccessMessage('');
 
     try {
-      await flightAPI.cancel(flightId);
+      await flightAPI.cancel(selectedFlight.id);
       setSuccessMessage('Flight cancelled successfully');
+      setShowCancelModal(false);
+      setSelectedFlight(null);
       loadApprovedFlights();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to cancel flight');
@@ -156,6 +158,11 @@ const AdminDashboard = () => {
     setRejectionReason('');
   };
 
+  const openCancelModal = (flight) => {
+    setSelectedFlight(flight);
+    setShowCancelModal(true);
+  };
+
   const handleUpdateRole = async () => {
     if (!newRole) {
       setError('Please select a role');
@@ -183,17 +190,22 @@ const AdminDashboard = () => {
     setShowRoleModal(true);
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) {
-      return;
-    }
+  const openDeleteUserModal = (user) => {
+    setSelectedUser(user);
+    setShowDeleteUserModal(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!selectedUser) return;
 
     setError('');
     setSuccessMessage('');
 
     try {
-      await userAPI.delete(userId);
+      await userAPI.delete(selectedUser.id);
       setSuccessMessage('User deleted successfully');
+      setShowDeleteUserModal(false);
+      setSelectedUser(null);
       loadUsers();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete user');
@@ -353,7 +365,7 @@ const AdminDashboard = () => {
                         {flight.is_upcoming && (
                           <button
                             className="btn btn-warning btn-sm"
-                            onClick={() => handleCancelFlight(flight.id)}
+                            onClick={() => openCancelModal(flight)}
                           >
                             Cancel
                           </button>
@@ -412,7 +424,7 @@ const AdminDashboard = () => {
                       </button>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => openDeleteUserModal(user)}
                       >
                         Delete
                       </button>
@@ -538,6 +550,64 @@ const AdminDashboard = () => {
               </button>
               <button className="btn btn-primary" onClick={handleUpdateRole}>
                 Update Role
+              </button>
+            </div>
+        </Modal>
+      )}
+
+      {/* Cancel Flight Modal */}
+      {selectedFlight && (
+        <Modal
+          isOpen={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          contentClassName="modal-content"
+        >
+            <div className="modal-header">
+              <h2>Cancel Flight: {selectedFlight.name}</h2>
+              <button className="modal-close" onClick={() => setShowCancelModal(false)}>
+                Ã—
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="confirm-text">Are you sure you want to cancel this flight?</p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowCancelModal(false)}>
+                No
+              </button>
+              <button className="btn btn-warning" onClick={handleCancelFlight}>
+                Yes, cancel
+              </button>
+            </div>
+        </Modal>
+      )}
+
+      {/* Delete User Modal */}
+      {selectedUser && (
+        <Modal
+          isOpen={showDeleteUserModal}
+          onClose={() => setShowDeleteUserModal(false)}
+          contentClassName="modal-content"
+        >
+            <div className="modal-header">
+              <h2>Delete User: {selectedUser.first_name} {selectedUser.last_name}</h2>
+              <button className="modal-close" onClick={() => setShowDeleteUserModal(false)}>
+                Ã—
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <p className="confirm-text">Are you sure you want to delete this user?</p>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setShowDeleteUserModal(false)}>
+                No
+              </button>
+              <button className="btn btn-danger" onClick={handleDeleteUser}>
+                Yes, delete
               </button>
             </div>
         </Modal>

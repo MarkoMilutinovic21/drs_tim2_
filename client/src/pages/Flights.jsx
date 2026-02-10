@@ -29,6 +29,8 @@ const Flights = () => {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [ratingData, setRatingData] = useState({ rating: 5, comment: '' });
   const [reportLoading, setReportLoading] = useState(false);
+  const [ratedFlights, setRatedFlights] = useState({});
+  const [bookedFlights, setBookedFlights] = useState({});
 
   const { user, isAdmin, isRegularUser } = useAuth();
 
@@ -58,15 +60,19 @@ const Flights = () => {
     try {
       setLoading(true);
       if (isRegularUser() && user?.id) {
-        const response = await bookingAPI.getUserBookings(user.id);
-        const bookings = response.data?.bookings || [];
+        const [bookingsResponse, allFlightsResponse] = await Promise.all([
+          bookingAPI.getUserBookings(user.id),
+          flightAPI.getByTabs()
+        ]);
+
+        const bookings = bookingsResponse.data?.bookings || [];
         const userFlights = dedupeById(
           bookings
             .map((booking) => booking.flight)
             .filter(Boolean)
         );
 
-        const grouped = {
+        const groupedUser = {
           upcoming: userFlights.filter((flight) => flight.status === 'APPROVED'),
           ongoing: userFlights.filter((flight) => flight.status === 'IN_PROGRESS'),
           completed_cancelled: userFlights.filter(
@@ -74,7 +80,27 @@ const Flights = () => {
           )
         };
 
-        setFlights(grouped);
+        const bookedIds = new Set(
+          bookings
+            .filter((booking) =>
+              ['PENDING', 'PROCESSING', 'COMPLETED'].includes(booking.status)
+            )
+            .map((booking) => booking.flight_id)
+        );
+
+        const bookedMap = {};
+        bookedIds.forEach((id) => {
+          bookedMap[id] = true;
+        });
+
+        const allData = allFlightsResponse.data || {};
+        setFlights({
+          upcoming: dedupeById(allData.upcoming),
+          ongoing: groupedUser.ongoing,
+          completed_cancelled: groupedUser.completed_cancelled
+        });
+        setBookedFlights(bookedMap);
+        await loadRatingsForFlights(groupedUser.completed_cancelled);
       } else {
         const response = await flightAPI.getByTabs();
         const data = response.data || {};
@@ -83,6 +109,7 @@ const Flights = () => {
           ongoing: dedupeById(data.ongoing),
           completed_cancelled: dedupeById(data.completed_cancelled)
         });
+        setBookedFlights({});
       }
       setError('');
     } catch (err) {
@@ -91,6 +118,49 @@ const Flights = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadRatingsForFlights = async (completedFlights = []) => {
+    if (!user?.id) {
+      setRatedFlights({});
+      return;
+    }
+
+    const completedIds = Array.from(
+      new Set(
+        completedFlights
+          .filter((flight) => flight?.status === 'COMPLETED')
+          .map((flight) => flight.id)
+          .filter((id) => id != null)
+      )
+    );
+
+    if (completedIds.length === 0) {
+      setRatedFlights({});
+      return;
+    }
+
+    const results = await Promise.all(
+      completedIds.map(async (flightId) => {
+        try {
+          const response = await ratingAPI.getFlightRatings(flightId);
+          const ratings = response.data?.ratings || [];
+          const alreadyRated = ratings.some((rating) => rating.user_id === user.id);
+          return [flightId, alreadyRated];
+        } catch (err) {
+          return [flightId, false];
+        }
+      })
+    );
+
+    const ratedMap = {};
+    results.forEach(([flightId, alreadyRated]) => {
+      if (alreadyRated) {
+        ratedMap[flightId] = true;
+      }
+    });
+
+    setRatedFlights(ratedMap);
   };
 
   const loadAirlines = async () => {
@@ -169,6 +239,8 @@ const Flights = () => {
 
   const FlightCard = ({ flight }) => {
     const { formatTime, isOngoing } = useFlightTimer(flight);
+    const alreadyRated = Boolean(ratedFlights[flight.id]);
+    const alreadyBooked = Boolean(bookedFlights[flight.id]);
 
     return (
       <div className="flight-card">
@@ -219,23 +291,31 @@ const Flights = () => {
         </div>
 
         <div className="flight-actions">
-          {activeTab === 'upcoming' && !isRegularUser() && (
+          {activeTab === 'upcoming' && isRegularUser() && (
             <button
-              className="btn btn-primary"
+              className={`btn ${alreadyBooked ? 'btn-secondary' : 'btn-primary'}`}
               onClick={() => handleBookFlight(flight.id)}
-              disabled={bookingLoading[flight.id]}
+              disabled={alreadyBooked || bookingLoading[flight.id]}
             >
-              {bookingLoading[flight.id] ? 'Booking...' : 'Book Flight'}
+              {bookingLoading[flight.id]
+                ? 'Booking...'
+                : (alreadyBooked ? 'Already Booked' : 'Book Flight')}
             </button>
           )}
 
           {activeTab === 'completed_cancelled' && flight.status === 'COMPLETED' && (
-            <button
-              className="btn btn-warning"
-              onClick={() => handleRateFlight(flight)}
-            >
-              Rate Flight
-            </button>
+            alreadyRated ? (
+              <button className="btn btn-secondary" disabled>
+                You already rated this flight
+              </button>
+            ) : (
+              <button
+                className="btn btn-warning"
+                onClick={() => handleRateFlight(flight)}
+              >
+                Rate Flight
+              </button>
+            )
           )}
         </div>
       </div>
