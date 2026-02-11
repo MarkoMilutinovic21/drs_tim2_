@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 
-/**
- * Custom hook for tracking ongoing flight remaining time
- */
+// Custom hook for tracking ongoing flight remaining time
+// on je hooks zato sto koristi useState/useEffect da promeni nesto
+// dok su obicni helperi neke obicne kalkulacije
 export const useFlightTimer = (flight) => {
   const [remainingTime, setRemainingTime] = useState(null);
   const [isOngoing, setIsOngoing] = useState(false);
@@ -26,7 +26,7 @@ export const useFlightTimer = (flight) => {
         }
         return prev - 1;
       });
-    }, 60000); // Update every minute
+    }, 60000); // Update every minute - malo glupo ali na 60s odradi -1min
 
     return () => clearInterval(interval);
   }, [flight]);
@@ -40,5 +40,6 @@ export const useFlightTimer = (flight) => {
     return `${hours}h ${minutes}m`;
   };
 
-  return { remainingTime, isOngoing, formatTime };
+  return { remainingTime, isOngoing, formatTime };  // ovo koristi flights.jsx 
+                                                    // da prikaze tajmer za kartici let
 };

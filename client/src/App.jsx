@@ -20,14 +20,15 @@ const AppShell = () => {
   return (
     <div className="app">
       <Navbar />
-      <main className={`main-content ${isAuthPage ? 'main-content-auth' : ''}`}>
-        <div key={location.pathname} className="route-transition">
+      <main className={`main-content ${isAuthPage ? 'main-content-auth' : ''}`}> {/*ako je ulogovan dodaj mu main content auth*/}
+        <div key={location.pathname} className="route-transition"> {/*react ga koristi za promenu ruta kao animaciju neku nesto */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Protected Routes */}
+            {/* Protected Routes - korisnik mora biti ulogovan/odredjen role za upotrebu odredjenih resursa*/}
+            {/* tipa admin ce imati admin stranicu...*/}
             <Route
               path="/flights"
               element={
@@ -61,7 +62,7 @@ const AppShell = () => {
               }
             />
 
-            {/* Catch all */}
+            {/* Catch all - ako se ne poklapa sa nekom od prethodno navedenih ruta, samo idi na pocetnu str*/}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -70,7 +71,8 @@ const AppShell = () => {
   );
 };
 
-function App() {
+// omotac ovi unutar imaju pristup spoljasnjima
+function App() {  
   return (
     <Router>
       <AuthProvider>

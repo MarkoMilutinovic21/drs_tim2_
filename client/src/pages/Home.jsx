@@ -68,7 +68,7 @@ const Home = () => {
       <section className="features-section">
         <h2>Platform Features</h2>
         <div className="features-grid">
-          {features.map((feature) => (
+          {features.map((feature) => (      // pravi za feature kartice 
             <article key={feature.id} className="feature-card">
               <span className="feature-tag">{feature.id}</span>
               <h3>{feature.title}</h3>

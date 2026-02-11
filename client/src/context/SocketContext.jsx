@@ -11,13 +11,13 @@ export const SocketProvider = ({ children }) => {
   const [serverSocket, setServerSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [notifications, setNotifications] = useState([]);
-  const { isAuthenticated, refreshUser, user } = useAuth();
+  const { isAuthenticated, refreshUser, user } = useAuth(); // uzima info iz contexta
   const SERVER_URL = 'http://localhost:5000';
 
   useEffect(() => {
     if (isAuthenticated()) {
-      // Connect to Flight Service WebSocket
-      const newSocket = io(FLIGHT_SERVICE_URL, {
+      // Connect to Flight Service WebSocket - cim se uloguje povezi se na websocket
+      const newSocket = io(FLIGHT_SERVICE_URL, {    // io je f-ja biblioteke koja gotvara websocket vezu
         transports: ['websocket'],
         reconnection: true,
         reconnectionAttempts: 5,
@@ -34,7 +34,7 @@ export const SocketProvider = ({ children }) => {
         setConnected(false);
       });
 
-      // Listen for new flight notifications (for admin)
+      // Listen for new flight notifications -- kada menadzer  napravi nov let 
       newSocket.on('new_flight', (flightData) => {
         console.log('New flight notification:', flightData);
         addNotification({
@@ -45,7 +45,9 @@ export const SocketProvider = ({ children }) => {
         });
       });
 
-      setSocket(newSocket);
+      setSocket(newSocket); // ovo sacuva vezu kako bi druge komponente npt managerDashboard.jsx
+                            // mogle koristiti ovo
+                            // npr da menadzer slusa sta admin radi
 
       // Connect to Server WebSocket (role updates)
       const newServerSocket = io(SERVER_URL, {
@@ -63,7 +65,7 @@ export const SocketProvider = ({ children }) => {
 
       setServerSocket(newServerSocket);
 
-      return () => {
+      return () => {        // cisti sve kada se izloguje/zatvori tab
         newSocket.disconnect();
         newServerSocket.disconnect();
       };
@@ -78,10 +80,12 @@ export const SocketProvider = ({ children }) => {
     // Dismiss when user explicitly clears (no auto-dismiss here)
   };
 
+  // sve brise
   const clearNotifications = () => {
     setNotifications([]);
   };
 
+  // brise jednu konkretnu
   const removeNotification = (id) => {
     setNotifications((prev) => prev.filter((item) => item.id !== id));
   };

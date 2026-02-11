@@ -40,7 +40,7 @@ const Flights = () => {
     if (!isRegularUser()) {
       loadAirlines();
     }
-    // Refresh flights every 30 seconds
+    // Refresh na 30 sekundi 
     const interval = setInterval(loadFlights, 30000);
     return () => clearInterval(interval);
   }, [user]);

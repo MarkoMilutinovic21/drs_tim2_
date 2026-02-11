@@ -28,7 +28,7 @@ const Profile = () => {
     profile_picture: null
   });
 
-  useEffect(() => {
+  useEffect(() => {   // ucitava sve rezervacije korisnika
     loadUserBookings();
   }, [user]);
 

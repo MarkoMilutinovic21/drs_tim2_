@@ -3,21 +3,22 @@ import { authAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {   {/*definise sta cuva sve*/}
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  // Load user on mount if token exists
+  // Ucita korisnika ako postoji token
   useEffect(() => {
     if (token) {
       loadUser();
     } else {
-      setLoading(false);
+      setLoading(false);  // niko nije ulogovan
     }
   }, [token]);
 
   // Listen for role updates from other tabs (admin role change)
+  // ako admin azurira role da se i u drugom tabu azurira 
   useEffect(() => {
     const handleStorage = (event) => {
       if (event.key !== 'roleUpdate' || !event.newValue) return;
@@ -35,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('storage', handleStorage);
   }, [user]);
 
-  // Refresh user on focus/visibility change and periodically (works across incognito tabs)
+  // Refresh user on focus/visibility change and periodically
   useEffect(() => {
     if (!token) return undefined;
 
@@ -54,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
     const interval = setInterval(() => {
       loadUser();
-    }, 20000);
+    }, 20000);    // svakih 20s
 
     return () => {
       window.removeEventListener('focus', handleFocus);
@@ -63,10 +64,10 @@ export const AuthProvider = ({ children }) => {
     };
   }, [token]);
 
-  const loadUser = async () => {
+  const loadUser = async () => {    // ucitava korisnika sa servera 
     try {
       const response = await authAPI.getCurrentUser();
-      setUser(response.data.user);
+      setUser(response.data.user);    // OVDE PAMTI KORISNIKA
     } catch (error) {
       console.error('Failed to load user:', error);
       logout();
@@ -80,9 +81,9 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(email, password);
       const { access_token, user } = response.data;
       
-      localStorage.setItem('token', access_token);
-      setToken(access_token);
-      setUser(user);
+      localStorage.setItem('token', access_token); // trajno u browseru sacuva token
+      setToken(access_token); // zapamti token u react stanju
+      setUser(user);          // zapamti korisnika
       
       return { success: true };
     } catch (error) {
@@ -111,12 +112,13 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem('token'); // uklanja token 
       setToken(null);
       setUser(null);
     }
   };
 
+  // POMOCNE FUKCIJE
   const isAuthenticated = () => {
     return !!token && !!user;
   };
@@ -137,6 +139,8 @@ export const AuthProvider = ({ children }) => {
     return user?.role === 'KORISNIK';
   };
 
+
+  // OVO SLUZI ZA DELJENJE SA DRUGIM KOMPONENTAMA - ono sta auth radi 
   const value = {
     user,
     token,
@@ -155,6 +159,8 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// const { user, isAdmin, login, logout } = useAuth();
+// svaka komponenta moze koristiti liniju iznad da pristupi podatcima o korisniku
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

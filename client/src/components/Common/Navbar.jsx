@@ -10,7 +10,7 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
+    await logout();   // pozove authContext logout da izbrise token da kaze srvru da to odradi
     navigate('/login');
   };
 
@@ -22,7 +22,7 @@ const Navbar = () => {
         </Link>
 
         <div className="navbar-menu">
-          {isAuthenticated() ? (
+          {isAuthenticated() ? (    // ako je ulogovan prikazi info korisnika
             <>
               <Link to="/flights" className="navbar-link">
                 Flights
@@ -69,7 +69,7 @@ const Navbar = () => {
                 Logout
               </button>
             </>
-          ) : (
+          ) : ( // ako nije samo ono login i register
             <>
               <Link to="/login" className="navbar-link">
                 Login

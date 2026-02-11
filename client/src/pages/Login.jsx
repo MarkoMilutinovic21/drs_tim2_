@@ -11,12 +11,12 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [generalError, setGeneralError] = useState('');
+  const [generalError, setGeneralError] = useState(''); // opsta srvr greska npr wrong password
 
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e) => {   // azurira kada korisik kuca nesto 
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear error for this field
@@ -25,6 +25,7 @@ const Login = () => {
     }
   };
 
+  // VALIDACIJA da li je sve popunjeno ispravno pre slanja 
   const validate = () => {
     const newErrors = {};
 

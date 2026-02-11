@@ -36,7 +36,7 @@ const AdminDashboard = () => {
   // Reload pending flights when notification arrives
   useEffect(() => {
     if (notifications.length > 0) {
-      loadPendingFlights();
+      loadPendingFlights();   // kada stigne websocket notify - refres odradi
     }
   }, [notifications]);
 
