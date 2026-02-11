@@ -79,7 +79,8 @@ def get_all_ratings():
     GET /api/ratings
     """
     try:
-        response, status_code = RatingService.get_all_ratings()
+        include_user_details = request.args.get('include_user_details', 'true').lower() in ('1', 'true', 'yes')
+        response, status_code = RatingService.get_all_ratings(include_user_details=include_user_details)
         
         return jsonify(response), status_code
     

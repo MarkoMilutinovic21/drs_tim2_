@@ -146,11 +146,18 @@ def generate_report():
                 current_app.logger.error(
                     f"Report email failed: {notify_response.status_code} - {notify_response.text}"
                 )
-                return jsonify({'error': 'Failed to send report email'}), 502
+                return jsonify({
+                    'error': 'Failed to send report email',
+                    'notify_status': notify_response.status_code,
+                    'notify_response': notify_response.text
+                }), 502
         
         except Exception as e:
             current_app.logger.error(f"Failed to send report email: {str(e)}")
-            return jsonify({'error': 'Failed to send report email'}), 502
+            return jsonify({
+                'error': 'Failed to send report email',
+                'details': str(e)
+            }), 502
         
         return jsonify({
             'message': 'Report generated and emailed successfully',

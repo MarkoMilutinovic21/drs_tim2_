@@ -58,8 +58,15 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     setLoading(true);
-    await Promise.all([loadPendingFlights(), loadApprovedFlights(), loadUsers(), loadRatings()]);
-    setLoading(false);
+    try {
+      // Render dashboard as soon as core admin data is loaded.
+      await Promise.all([loadPendingFlights(), loadApprovedFlights(), loadUsers()]);
+    } finally {
+      setLoading(false);
+    }
+
+    // Ratings can be expensive to fetch; load them in the background.
+    loadRatings();
   };
 
   const loadPendingFlights = async () => {

@@ -126,9 +126,12 @@ class RatingService:
             return {'error': 'Failed to fetch ratings'}, 500
     
     @staticmethod
-    def get_all_ratings():
+    def get_all_ratings(include_user_details=True):
         """
         Get all ratings (admin only).
+
+        Args:
+            include_user_details: Whether to resolve user email from Server API.
         
         Returns:
             tuple: (dict, int) - (response_data, status_code)
@@ -152,18 +155,19 @@ class RatingService:
                         'arrival_airport': flight.arrival_airport
                     }
 
-                # Get user email from Server
-                try:
-                    server_url = current_app.config['SERVER_URL']
-                    user_response = requests.get(
-                        f"{server_url}/api/users/{rating.user_id}/internal",
-                        timeout=5
-                    )
-                    if user_response.status_code == 200:
-                        user_data = user_response.json().get('user', {})
-                        rating_dict['user_email'] = user_data.get('email')
-                except Exception:
-                    pass
+                if include_user_details:
+                    # Optional lookup: can be skipped by gateway to avoid proxy loops.
+                    try:
+                        server_url = current_app.config['SERVER_URL']
+                        user_response = requests.get(
+                            f"{server_url}/api/users/{rating.user_id}/internal",
+                            timeout=5
+                        )
+                        if user_response.status_code == 200:
+                            user_data = user_response.json().get('user', {})
+                            rating_dict['user_email'] = user_data.get('email')
+                    except Exception:
+                        pass
                 
                 ratings_data.append(rating_dict)
             

@@ -54,7 +54,7 @@ class BookingService:
             try:
                 user_response = requests.get(
                     f"{server_url}/api/users/{booking_dto.user_id}/internal",
-                    timeout=5
+                    timeout=15
                 )
                 
                 if user_response.status_code != 200:
@@ -76,7 +76,7 @@ class BookingService:
                 deduct_response = requests.post(
                     f"{server_url}/api/users/{booking_dto.user_id}/deduct",
                     json={'amount': float(flight.ticket_price)},
-                    timeout=5
+                    timeout=15
                 )
                 
                 if deduct_response.status_code != 200:
