@@ -37,9 +37,7 @@ const Flights = () => {
   useEffect(() => {
     if (!user) return;
     loadFlights();
-    if (!isRegularUser()) {
-      loadAirlines();
-    }
+    loadAirlines();
     // Refresh na 30 sekundi 
     const interval = setInterval(loadFlights, 30000);
     return () => clearInterval(interval);
@@ -79,10 +77,10 @@ const Flights = () => {
         );
 
         const groupedUser = {
-          upcoming: userFlights.filter((flight) => flight.status === 'APPROVED'),
-          ongoing: userFlights.filter((flight) => flight.status === 'IN_PROGRESS'),
+          upcoming: userFlights.filter((flight) => flight.is_upcoming),
+          ongoing: userFlights.filter((flight) => flight.is_ongoing),
           completed_cancelled: userFlights.filter(
-            (flight) => flight.status === 'COMPLETED' || flight.status === 'CANCELLED'
+            (flight) => flight.is_completed || flight.status === 'CANCELLED'
           )
         };
 

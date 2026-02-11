@@ -126,8 +126,9 @@ class User(db.Model):
             return True
         return False
     
-    def to_dict(self, include_sensitive=False):
-        """Convert user object to dictionary."""
+    def to_dict(self, include_sensitive=False): # pretvara korisnika u JSON objekat
+        """Convert user object to dictionary."""    # obj se salje klijentu to je ono sta dobije kada pozove
+                                                    # npr authAPI.getCurrentUser()
         data = {
             'id': self.id,
             'first_name': self.first_name,

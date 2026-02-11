@@ -68,19 +68,19 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
-class DevelopmentConfig(Config):
+class DevelopmentConfig(Config):    # kada je ukljucen prikazuje sql upite
     """Development configuration."""
     DEBUG = True
     SQLALCHEMY_ECHO = True
 
 
-class ProductionConfig(Config):
+class ProductionConfig(Config):     # kada je iskljucen bez sql upita
     """Production configuration."""
     DEBUG = False
     SQLALCHEMY_ECHO = False
 
 
-class TestingConfig(Config):
+class TestingConfig(Config):    # koristi privremenu bazu u memoriji
     """Testing configuration."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'

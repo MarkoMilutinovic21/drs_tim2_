@@ -25,8 +25,9 @@ class EmailService:
         """
         try:
             # Convert single recipient to list
-            if isinstance(recipients, str):
-                recipients = [recipients]
+            if isinstance(recipients, str): # proveri da li je string
+                recipients = [recipients]   # pretvori ga u listu
+                # flask mail zahteva da bude lista cak i za jednog korisnika kada salje...
             
             msg = Message(
                 subject=subject,
