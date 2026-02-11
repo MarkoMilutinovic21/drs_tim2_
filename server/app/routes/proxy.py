@@ -2,13 +2,18 @@
 Generic proxy routes for flight-service resources.
 """
 import os
+import json
 import requests
 from threading import Thread
 from flask import Blueprint, Response, current_app, jsonify, request
+from flask_jwt_extended import verify_jwt_in_request
+from app.utils.jwt_helpers import get_current_user_id
+from app.models import User
+from app import db
 from app import socketio
 
 proxy_bp = Blueprint('proxy', __name__)
-_PROXIED_PREFIXES = ('flights', 'bookings', 'ratings')
+_PROXIED_PREFIXES = ('flights', 'bookings', 'ratings', 'airlines')
 
 
 def _build_candidate_urls(configured_service_url: str):
@@ -49,6 +54,36 @@ def _send_report_async(app, candidate_base_urls, params, body, headers):
                 app.logger.error(f"Async report proxy failed for {target_url}: {exc}")
 
 
+def _authorize_airline_mutation(path: str):
+    if not path.startswith('airlines'):
+        return None, None
+
+    if request.method not in ('POST', 'PUT', 'DELETE'):
+        return None, None
+
+    verify_jwt_in_request()
+    current_user_id = get_current_user_id()
+    user = db.session.get(User, current_user_id)
+
+    if not user:
+        return None, (jsonify({'error': 'User not found'}), 404)
+
+    if not user.is_active:
+        return None, (jsonify({'error': 'Account is deactivated'}), 403)
+
+    if user.is_account_locked():
+        return None, (jsonify({'error': 'Account is locked'}), 403)
+
+    if request.method in ('POST', 'PUT'):
+        if not (user.is_manager() or user.is_admin()):
+            return None, (jsonify({'error': 'Manager privileges required'}), 403)
+
+    if request.method == 'DELETE' and not user.is_admin():
+        return None, (jsonify({'error': 'Admin privileges required'}), 403)
+
+    return current_user_id, None
+
+
 @proxy_bp.route('/<path:path>', methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
 def proxy_to_flight_service(path):
     if request.headers.get('X-Flight-Proxy-Hop') == '1':
@@ -68,6 +103,10 @@ def proxy_to_flight_service(path):
             headers[header_name] = header_value
     headers['X-Flight-Proxy-Hop'] = '1'
 
+    current_user_id, auth_error = _authorize_airline_mutation(path)
+    if auth_error:
+        return auth_error
+
     last_error = None
     downstream = None
     target_path = f"/api/{path}"
@@ -76,11 +115,20 @@ def proxy_to_flight_service(path):
         # Avoid server->flight-service->server recursive lookups through proxy.
         forwarded_params['include_user_details'] = ['false']
 
+    request_body = request.get_data()
+
+    if request.method == 'POST' and path == 'airlines':
+        payload = request.get_json(silent=True) or {}
+        if 'created_by' not in payload:
+            payload['created_by'] = current_user_id
+            request_body = json.dumps(payload).encode('utf-8')
+            headers['Content-Type'] = 'application/json'
+
     if request.method == 'POST' and path == 'flights/report':
         app = current_app._get_current_object()
         thread = Thread(
             target=_send_report_async,
-            args=(app, candidate_base_urls, forwarded_params, request.get_data(), headers),
+            args=(app, candidate_base_urls, forwarded_params, request_body, headers),
             daemon=True
         )
         thread.start()
@@ -92,7 +140,7 @@ def proxy_to_flight_service(path):
                 method=request.method,
                 url=target_url,
                 params=forwarded_params,
-                data=request.get_data(),
+                data=request_body,
                 headers=headers,
                 timeout=(2, 15)
             )

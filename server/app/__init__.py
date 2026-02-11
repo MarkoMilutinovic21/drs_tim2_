@@ -124,14 +124,12 @@ def create_app(config_name='default'):
     from app.routes import (
         auth_bp,
         users_bp,
-        airlines_bp,
         notifications_bp,
         proxy_bp
     )
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(users_bp, url_prefix='/api/users')
-    app.register_blueprint(airlines_bp, url_prefix='/api/airlines')
     app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
     app.register_blueprint(proxy_bp, url_prefix='/api')
     

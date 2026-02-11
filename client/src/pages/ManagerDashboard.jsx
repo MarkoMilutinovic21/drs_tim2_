@@ -218,7 +218,8 @@ const ManagerDashboard = () => {
         code: airlineFormData.code,
         country: airlineFormData.country,
         description: airlineFormData.description || null,
-        logo_url: airlineFormData.logo_url || null
+        logo_url: airlineFormData.logo_url || null,
+        created_by: user.id
       });
       setSuccessMessage('Airline created successfully');
       setShowAirlineModal(false);

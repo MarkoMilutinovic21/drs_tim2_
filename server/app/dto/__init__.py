@@ -3,7 +3,6 @@ DTO module initialization.
 """
 from .user_dto import UserRegistrationDTO, UserUpdateDTO, PasswordChangeDTO, BalanceUpdateDTO
 from .auth_dto import LoginDTO, RoleUpdateDTO
-from .airline_dto import AirlineCreateDTO, AirlineUpdateDTO
 
 __all__ = [
     'UserRegistrationDTO',
@@ -11,7 +10,5 @@ __all__ = [
     'PasswordChangeDTO',
     'BalanceUpdateDTO',
     'LoginDTO',
-    'RoleUpdateDTO',
-    'AirlineCreateDTO',
-    'AirlineUpdateDTO'
+    'RoleUpdateDTO'
 ]

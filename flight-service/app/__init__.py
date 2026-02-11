@@ -49,11 +49,12 @@ def create_app(config_name='default'):
         os.makedirs(app.config['PDF_FOLDER'])
     
     # Register blueprints
-    from app.routes import flights_bp, bookings_bp, ratings_bp
+    from app.routes import flights_bp, bookings_bp, ratings_bp, airlines_bp
     
     app.register_blueprint(flights_bp, url_prefix='/api/flights')
     app.register_blueprint(bookings_bp, url_prefix='/api/bookings')
     app.register_blueprint(ratings_bp, url_prefix='/api/ratings')
+    app.register_blueprint(airlines_bp, url_prefix='/api/airlines')
     
     # Health check endpoint
     @app.route('/health')

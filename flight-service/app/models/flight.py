@@ -15,7 +15,7 @@ class Flight(db.Model):
     
     # Flight Information
     name = db.Column(db.String(200), nullable=False, index=True)
-    airline_id = db.Column(db.Integer, nullable=False)  # Reference to Airline in Server DB
+    airline_id = db.Column(db.Integer, db.ForeignKey('airlines.id'), nullable=False)
     distance_km = db.Column(db.Integer, nullable=False)
     duration_minutes = db.Column(db.Integer, nullable=False)  # For testing: 1 minute
     

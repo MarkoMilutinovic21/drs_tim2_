@@ -4,6 +4,7 @@ DTO module initialization.
 from .flight_dto import FlightCreateDTO, FlightUpdateDTO, FlightApprovalDTO, FlightSearchDTO
 from .booking_dto import BookingCreateDTO
 from .rating_dto import RatingCreateDTO
+from .airline_dto import AirlineCreateDTO, AirlineUpdateDTO
 
 __all__ = [
     'FlightCreateDTO',
@@ -11,5 +12,7 @@ __all__ = [
     'FlightApprovalDTO',
     'FlightSearchDTO',
     'BookingCreateDTO',
-    'RatingCreateDTO'
+    'RatingCreateDTO',
+    'AirlineCreateDTO',
+    'AirlineUpdateDTO'
 ]
