@@ -25,7 +25,10 @@ const Profile = () => {
     country: '',
     street: '',
     street_number: '',
-    profile_picture: null
+    profile_picture: null,
+    old_password: '',
+    new_password: '',
+    confirm_password: ''
   });
 
   useEffect(() => {   // ucitava sve rezervacije korisnika
@@ -75,7 +78,10 @@ const Profile = () => {
       country: user.country || '',
       street: user.street || '',
       street_number: user.street_number || '',
-      profile_picture: null
+      profile_picture: null,
+      old_password: '',
+      new_password: '',
+      confirm_password: ''
     });
     setShowEditModal(true);
     setError('');
@@ -125,6 +131,18 @@ const Profile = () => {
       return false;
     }
 
+    if (formData.new_password) {
+      if (!formData.old_password) {
+        setError('Current password is required to set a new password');
+        return false;
+      }
+
+      if (formData.new_password !== formData.confirm_password) {
+        setError('New password and confirm password do not match');
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -151,6 +169,11 @@ const Profile = () => {
 
       // Update user profile
       await userAPI.update(user.id, updateData);
+
+      // Change password only when a new password is provided
+      if (formData.new_password) {
+        await userAPI.changePassword(user.id, formData.old_password, formData.new_password);
+      }
 
       // Upload profile picture if selected
       if (formData.profile_picture) {
@@ -464,6 +487,42 @@ const Profile = () => {
                   {formData.profile_picture && (
                     <small className="form-hint">Selected: {formData.profile_picture.name}</small>
                   )}
+                </div>
+
+                <div className="form-group form-group-full">
+                  <label className="form-label">Current Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    name="old_password"
+                    value={formData.old_password}
+                    onChange={handleFormChange}
+                    placeholder="Enter current password"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">New Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    name="new_password"
+                    value={formData.new_password}
+                    onChange={handleFormChange}
+                    placeholder="Enter new password"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Confirm New Password</label>
+                  <input
+                    type="password"
+                    className="form-input"
+                    name="confirm_password"
+                    value={formData.confirm_password}
+                    onChange={handleFormChange}
+                    placeholder="Confirm new password"
+                  />
                 </div>
               </div>
             </div>
