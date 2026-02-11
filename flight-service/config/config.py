@@ -9,23 +9,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if value is None or value == '':
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
 class Config:
     """Base configuration class."""
     
     # Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = _require_env('SECRET_KEY')
     DEBUG = os.getenv('DEBUG', 'False') == 'True'
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'mysql+pymysql://flight_user:flight_password@localhost:3307/flight_service_db'
-    )
+    SQLALCHEMY_DATABASE_URI = _require_env('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = DEBUG
     
     # Server URL
-    SERVER_URL = os.getenv('SERVER_URL', 'http://localhost:5000')
+    SERVER_URL = _require_env('SERVER_URL')
     
     # Server
     HOST = os.getenv('HOST', '0.0.0.0')

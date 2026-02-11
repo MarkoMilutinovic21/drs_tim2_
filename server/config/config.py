@@ -9,54 +9,58 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if value is None or value == '':
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
 class Config:
     """Base configuration class."""
     
     # Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
-    DEBUG = os.getenv('DEBUG', 'False') == 'True'
+    SECRET_KEY = _require_env('SECRET_KEY')
+    DEBUG = _require_env('DEBUG') == 'True'
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'mysql+pymysql://flight_user:flight_password@localhost:3306/flight_booking_db'
-    )
+    SQLALCHEMY_DATABASE_URI = _require_env('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = DEBUG
     
     # Redis
-    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+    REDIS_URL = _require_env('REDIS_URL')
     
     # JWT
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
+    JWT_SECRET_KEY = _require_env('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
-        seconds=int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+        seconds=int(_require_env('JWT_ACCESS_TOKEN_EXPIRES'))
     )
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access']
     
     # Email Configuration
-    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True') == 'True'
-    MAIL_USE_SSL = os.getenv('MAIL_USE_SSL', 'False') == 'True'
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@flightbooking.com')
+    MAIL_SERVER = _require_env('MAIL_SERVER')
+    MAIL_PORT = int(_require_env('MAIL_PORT'))
+    MAIL_USE_TLS = _require_env('MAIL_USE_TLS') == 'True'
+    MAIL_USE_SSL = _require_env('MAIL_USE_SSL') == 'True'
+    MAIL_USERNAME = _require_env('MAIL_USERNAME')
+    MAIL_PASSWORD = _require_env('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = _require_env('MAIL_DEFAULT_SENDER')
     
     # CORS
-    CORS_ORIGINS = os.getenv('CORS_ORIGINS', 'http://localhost:5173').split(',')
+    CORS_ORIGINS = _require_env('CORS_ORIGINS').split(',')
     
     # Flight Service
-    FLIGHT_SERVICE_URL = os.getenv('FLIGHT_SERVICE_URL', 'http://localhost:5001')
+    FLIGHT_SERVICE_URL = _require_env('FLIGHT_SERVICE_URL')
     
     # Login Security
-    MAX_LOGIN_ATTEMPTS = int(os.getenv('MAX_LOGIN_ATTEMPTS', 3))
-    LOCKOUT_DURATION = int(os.getenv('LOCKOUT_DURATION', 60))  # 1 minute in seconds
+    MAX_LOGIN_ATTEMPTS = int(_require_env('MAX_LOGIN_ATTEMPTS'))
+    LOCKOUT_DURATION = int(_require_env('LOCKOUT_DURATION'))
     
     # Server
-    HOST = os.getenv('HOST', '0.0.0.0')
-    PORT = int(os.getenv('PORT', 5000))
+    HOST = _require_env('HOST')
+    PORT = int(_require_env('PORT'))
     
     # File Upload
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
