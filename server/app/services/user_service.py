@@ -151,9 +151,17 @@ class UserService:
         
         # Update fields if provided
         try:
+            if update_dto.email and update_dto.email != user.email:
+                if not validate_email(update_dto.email):
+                    return {'error': 'Invalid email format'}, 400
+                existing = User.query.filter_by(email=update_dto.email).first()
+                if existing:
+                    return {'error': 'Email already in use'}, 409
+                user.email = update_dto.email
+
             if update_dto.first_name:
                 user.first_name = update_dto.first_name
-            
+
             if update_dto.last_name:
                 user.last_name = update_dto.last_name
             

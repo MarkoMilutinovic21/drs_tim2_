@@ -46,10 +46,10 @@ class LoginAttempt(db.Model):
         }
     
     @staticmethod
-    def get_recent_failed_attempts(user_id, minutes=1):
+    def get_recent_failed_attempts(user_id, seconds=60):
         """Get count of recent failed login attempts for a user."""
         from datetime import timedelta
-        time_threshold = datetime.utcnow() - timedelta(minutes=minutes)
+        time_threshold = datetime.utcnow() - timedelta(seconds=seconds)
         
         return LoginAttempt.query.filter(
             LoginAttempt.user_id == user_id,

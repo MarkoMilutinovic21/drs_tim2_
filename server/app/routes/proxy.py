@@ -180,6 +180,21 @@ def proxy_to_flight_service(path):
                 'rejection_reason': flight_data.get('rejection_reason')
             }, namespace='/')
 
+    # Enrich ratings with user emails from server DB
+    if request.method == 'GET' and path == 'ratings' and downstream.status_code == 200:
+        try:
+            data = downstream.json() if downstream.content else {}
+            ratings_list = data.get('ratings', [])
+            if ratings_list:
+                user_ids = {r['user_id'] for r in ratings_list if r.get('user_id')}
+                users = User.query.filter(User.id.in_(user_ids)).all()
+                email_map = {u.id: u.email for u in users}
+                for r in ratings_list:
+                    r['user_email'] = email_map.get(r.get('user_id'))
+            return jsonify(data), downstream.status_code
+        except Exception:
+            pass
+
     content_type = downstream.headers.get('Content-Type', 'application/json')
     return Response(
         response=downstream.content,

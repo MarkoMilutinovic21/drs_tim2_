@@ -103,13 +103,13 @@ class User(db.Model):
         """Check if account is currently locked."""
         if not self.is_locked:
             return False
-        
-        if self.locked_until and datetime.utcnow() > self.locked_until:
-            # Lock period expired, unlock automatically
+
+        if not self.locked_until or datetime.utcnow() > self.locked_until:
+            # Lock period expired or missing, unlock automatically
             self.unlock_account()
             db.session.commit()
             return False
-        
+
         return True
     
     def add_balance(self, amount):

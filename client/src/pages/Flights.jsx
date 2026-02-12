@@ -307,7 +307,7 @@ const Flights = () => {
             </button>
           )}
 
-          {activeTab === 'completed_cancelled' && flight.status === 'COMPLETED' && (
+          {activeTab === 'completed_cancelled' && flight.status === 'COMPLETED' && isRegularUser() && (
             alreadyRated ? (
               <button className="btn btn-secondary" disabled>
                 You already rated this flight

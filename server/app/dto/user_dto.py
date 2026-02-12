@@ -86,10 +86,11 @@ class UserRegistrationDTO:
 class UserUpdateDTO:
     """DTO for updating user information."""
     
-    def __init__(self, first_name=None, last_name=None, date_of_birth=None,
+    def __init__(self, first_name=None, last_name=None, email=None, date_of_birth=None,
                  gender=None, country=None, street=None, street_number=None):
         self.first_name = first_name
         self.last_name = last_name
+        self.email = email
         self.date_of_birth = date_of_birth
         self.gender = gender
         self.country = country
@@ -106,6 +107,7 @@ class UserUpdateDTO:
         return UserUpdateDTO(
             first_name=data.get('first_name'),
             last_name=data.get('last_name'),
+            email=data.get('email'),
             date_of_birth=dob,
             gender=data.get('gender'),
             country=data.get('country'),

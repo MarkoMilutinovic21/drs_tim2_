@@ -54,7 +54,7 @@ class AuthService:
             # Check failed attempts count
             failed_attempts = LoginAttempt.get_recent_failed_attempts(
                 user.id,
-                minutes=current_app.config['LOCKOUT_DURATION'] // 60
+                seconds=current_app.config['LOCKOUT_DURATION']
             )
             
             if failed_attempts >= current_app.config['MAX_LOGIN_ATTEMPTS']:
